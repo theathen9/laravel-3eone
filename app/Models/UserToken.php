@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class UserToken extends Model
 {
-    protected $table = 'tblUserTokens';
+    protected $table = 'tblusertokens';
 
     protected $primaryKey = 'token_id';
 

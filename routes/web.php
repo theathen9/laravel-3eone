@@ -67,8 +67,8 @@ Route::post('/auth/logout', [
 */
 
 Route::get('/', function () {
-    return "Hello word";
-});
+    return redirect()->route('auth.signin');
+})->name('home');
 
 /*
 |--------------------------------------------------------------------------

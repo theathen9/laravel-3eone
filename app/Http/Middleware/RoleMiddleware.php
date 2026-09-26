@@ -17,12 +17,16 @@ class RoleMiddleware
         $user = $request->user();
 
         if (!$user) {
-            return redirect()
-                ->route('login');
+            return redirect()->route('auth.signin');
         }
 
         $role = strtolower(
-            $user->role->role_name
+            $user->role?->role_name ?? ''
+        );
+
+        $roles = array_map(
+            'strtolower',
+            $roles
         );
 
         if (!in_array($role, $roles, true)) {

@@ -22,6 +22,11 @@ return Application::configure(
         Middleware $middleware
     ): void {
 
+
+        $middleware->redirectGuestsTo(
+            fn () => route('auth.signin')
+        );
+
         /*
         |--------------------------------------------------------------------------
         | Cookie Encryption
@@ -36,7 +41,6 @@ return Application::configure(
         |     $request->cookie('access-token')
         |
         */
-
         $middleware->encryptCookies(except: [
             'access-token',
             'refresh-token',

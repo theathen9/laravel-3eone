@@ -67,7 +67,7 @@ Route::post('/auth/logout', [
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return "Hello word";
 });
 
 /*

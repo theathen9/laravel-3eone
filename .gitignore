@@ -1,39 +1,58 @@
-*.log
-.DS_Store
+# Environment
 .env
-.env.backup
-.env.production
 .env.*
+!.env.example
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE / Editor
 .phpactor.json
 .phpunit.result.cache
+.phpunit.cache
 /.codex
 /.cursor/
 /.idea
 /.nova
-/.phpunit.cache
 /.vscode
 /.zed
+
+# Composer
+/vendor
 /auth.json
+
+# Node
 /node_modules
+
+# Laravel
 /public/build
-/public/fonts-manifest.dev.json
 /public/hot
 /public/storage
 /storage/*.key
 /storage/pail
-/vendor
 
-# Docker - keep these tracked
-# docker-compose.yml
-# Dockerfile
+# Vercel
+.vercel
 
+# IDE helper
 _ide_helper.php
+
+# Laravel Homestead
 Homestead.json
 Homestead.yaml
-Thumbs.db
 
+# PHPUnit
+.phpunit.result.cache
+
+# Temporary copied files
 *copy*.php
 *copy*.yml
 
-.vercel
-.env*
+# Docker
+# Keep these tracked:
+# docker-compose.yml
+# Dockerfile

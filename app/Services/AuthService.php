@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use App\Services\JwtService;
 use RuntimeException;
-use DateTime;
 
 class AuthService
 {
@@ -255,8 +254,6 @@ class AuthService
         );
     }
 
-    $now = new DateTime();
-
 
     $accessExpiry = 
         (int) $accessPayload['exp']
@@ -301,8 +298,8 @@ class AuthService
 
     $existingToken = UserToken::query()
         ->where('user_id', $user->user_id)
-        // ->where('device_id', $deviceId)
         ->where('user_agent', $userAgent)
+        ->where('device_id', $deviceId)
         // ->whereNull('revoked_at')
         ->first();
 

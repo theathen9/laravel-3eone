@@ -181,19 +181,19 @@ class WebAuthController extends Controller
          *
          * HttpOnly = true
          */
-        // ->withCookie(
-        //     cookie(
-        //         'device_id',
-        //         $tokens['device_id'],
-        //         60 * 24 * 365,
-        //         '/',
-        //         null,
-        //         $secure,
-        //         true,
-        //         false,
-        //         'Lax'
-        //     )
-        // )
+        ->withCookie(
+            cookie(
+                'device_id',
+                $tokens['device_id'],
+                60 * 24 * 7,
+                '/',
+                null,
+                $secure,
+                true,
+                false,
+                'Lax'
+            )
+        )
 
         /*
          * Frontend user information.

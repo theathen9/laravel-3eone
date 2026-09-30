@@ -12,9 +12,13 @@ use Throwable;
 class JwtService
 {
     private string $secret;
+
     private string $algorithm;
+
     private string $issuer;
+
     private int $accessLifetime;
+
     private int $refreshLifetime;
 
     public function __construct()
@@ -95,166 +99,160 @@ class JwtService
     }
 
     public function createRefreshToken(User $user): string
-{
-    $now = now()->timestamp;
+    {
+        $now = now()->timestamp;
 
-    $payload = [
-        'iss' => $this->issuer,
-        'sub' => (string) $user->user_id,
-        'jti' => (string) Str::uuid(),
-        'iat' => $now,
-        'nbf' => $now,
-        'exp' => $now + $this->refreshLifetime,
-        'type' => 'refresh',
-    ];
+        $payload = [
+            'iss' => $this->issuer,
+            'sub' => (string) $user->user_id,
+            'jti' => (string) Str::uuid(),
+            'iat' => $now,
+            'nbf' => $now,
+            'exp' => $now + $this->refreshLifetime,
+            'type' => 'refresh',
+        ];
 
-    return JWT::encode(
-        $payload,
-        $this->secret,
-        $this->algorithm
-    );
-}
-
+        return JWT::encode(
+            $payload,
+            $this->secret,
+            $this->algorithm
+        );
+    }
 
     /**
      * Decode and validate access JWT.
      */
-    
-
-
     private function decodeToken(
-    string $token,
-    string $expectedType
-): ?array {
-    $token = trim($token);
+        string $token,
+        string $expectedType
+    ): ?array {
+        $token = trim($token);
 
-    if ($token === '') {
-        return null;
-    }
-
-    try {
-        $payload = JWT::decode(
-            $token,
-            new Key(
-                $this->secret,
-                $this->algorithm
-            )
-        );
-
-        $data = (array) $payload;
-
-        /*
-        |--------------------------------------------------------------------------
-        | Issuer
-        |--------------------------------------------------------------------------
-        */
-
-        if (
-            !isset($data['iss']) ||
-            !is_string($data['iss']) ||
-            !hash_equals(
-                $this->issuer,
-                $data['iss']
-            )
-        ) {
+        if ($token === '') {
             return null;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Token type
-        |--------------------------------------------------------------------------
-        */
+        try {
+            $payload = JWT::decode(
+                $token,
+                new Key(
+                    $this->secret,
+                    $this->algorithm
+                )
+            );
 
-        if (
-            ($data['type'] ?? null)
-            !== $expectedType
-        ) {
-            return null;
-        }
+            $data = (array) $payload;
 
-        /*
-        |--------------------------------------------------------------------------
-        | Subject
-        |--------------------------------------------------------------------------
-        */
+            /*
+            |--------------------------------------------------------------------------
+            | Issuer
+            |--------------------------------------------------------------------------
+            */
 
-        if (
-            !isset($data['sub']) ||
-            !is_string($data['sub']) ||
-            $data['sub'] === ''
-        ) {
-            return null;
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | JTI
-        |--------------------------------------------------------------------------
-        */
-
-        if (
-            !isset($data['jti']) ||
-            !is_string($data['jti']) ||
-            !Str::isUuid($data['jti'])
-        ) {
-            return null;
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Standard claims
-        |--------------------------------------------------------------------------
-        */
-
-        foreach ([
-            'iat',
-            'nbf',
-            'exp',
-        ] as $claim) {
             if (
-                !isset($data[$claim]) ||
-                !is_numeric($data[$claim])
+                ! isset($data['iss']) ||
+                ! is_string($data['iss']) ||
+                ! hash_equals(
+                    $this->issuer,
+                    $data['iss']
+                )
             ) {
                 return null;
             }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Token type
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                ($data['type'] ?? null)
+                !== $expectedType
+            ) {
+                return null;
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Subject
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                ! isset($data['sub']) ||
+                ! is_string($data['sub']) ||
+                $data['sub'] === ''
+            ) {
+                return null;
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | JTI
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                ! isset($data['jti']) ||
+                ! is_string($data['jti']) ||
+                ! Str::isUuid($data['jti'])
+            ) {
+                return null;
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Standard claims
+            |--------------------------------------------------------------------------
+            */
+
+            foreach ([
+                'iat',
+                'nbf',
+                'exp',
+            ] as $claim) {
+                if (
+                    ! isset($data[$claim]) ||
+                    ! is_numeric($data[$claim])
+                ) {
+                    return null;
+                }
+            }
+
+            return $data;
+
+        } catch (Throwable) {
+            return null;
         }
-
-        return $data;
-
-    } catch (Throwable) {
-        return null;
     }
-}
 
+    public function decode(string $token): ?array
+    {
+        return $this->decodeToken(
+            $token,
+            'access'
+        );
+    }
 
-public function decode(string $token): ?array
-{
-    return $this->decodeToken(
-        $token,
-        'access'
-    );
-}
+    public function decodeRefreshToken(
+        string $token
+    ): ?array {
+        return $this->decodeToken(
+            $token,
+            'refresh'
+        );
+    }
 
-public function decodeRefreshToken(
-    string $token
-): ?array {
-    return $this->decodeToken(
-        $token,
-        'refresh'
-    );
-}
+    public function validate(string $token): bool
+    {
+        return $this->decode($token) !== null;
+    }
 
-public function validate(string $token): bool
-{
-    return $this->decode($token) !== null;
-}
-
-public function payload(string $token): ?array
-{
-    return $this->decode($token);
-}
-
+    public function payload(string $token): ?array
+    {
+        return $this->decode($token);
+    }
 
     public function remainingSeconds(
         string $token
@@ -262,8 +260,8 @@ public function payload(string $token): ?array
         $payload = $this->decode($token);
 
         if (
-            !$payload ||
-            !isset($payload['exp'])
+            ! $payload ||
+            ! isset($payload['exp'])
         ) {
             return null;
         }

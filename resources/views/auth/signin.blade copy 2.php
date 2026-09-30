@@ -32,13 +32,13 @@
                         </div>
 
                         <!-- Error Message -->
-                        <?php if (!empty($error)): ?>
+                        <?php if (! empty($error)) { ?>
                             <div
                                 class="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-center text-sm font-medium text-red-700"
                                 role="alert">
                                 <?= htmlspecialchars($error) ?>
                             </div>
-                        <?php endif; ?>
+                        <?php } ?>
 
                         <!-- Login Form -->
                         <form method="post" class="space-y-5" autocomplete="off">

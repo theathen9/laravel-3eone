@@ -27,8 +27,7 @@ return new class extends Migration
                 ->constrained('tblRoles', 'role_id');
 
             $table->integer('status')
-            ->default(1);
-
+                ->default(1);
 
             $table->timestamp('last_login')
                 ->nullable();

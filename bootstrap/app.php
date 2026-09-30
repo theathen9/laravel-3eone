@@ -1,13 +1,12 @@
 <?php
 
+use App\Http\Middleware\ApiAuth;
+use App\Http\Middleware\RoleMiddleware;
+use App\Http\Middleware\WebTokenAuth;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
-
-use App\Http\Middleware\ApiAuth;
-use App\Http\Middleware\RoleMiddleware;
-use App\Http\Middleware\WebTokenAuth;
 
 return Application::configure(
     basePath: dirname(__DIR__)
@@ -33,7 +32,6 @@ return Application::configure(
             fn () => route('auth.signin')
         );
 
-
         /*
         |--------------------------------------------------------------------------
         | Cookie Encryption
@@ -43,8 +41,8 @@ return Application::configure(
         $middleware->encryptCookies(except: [
             'access-token',
             'refresh-token',
+            // 'c_user',
         ]);
-
 
         /*
         |--------------------------------------------------------------------------
@@ -58,9 +56,8 @@ return Application::configure(
             'api.auth' => ApiAuth::class,
 
             'web.token' => WebTokenAuth::class,
-            
-        ]);
 
+        ]);
 
         /*
         |--------------------------------------------------------------------------
@@ -70,8 +67,7 @@ return Application::configure(
 
         $middleware->trustProxies(
             at: '*',
-            headers:
-                Request::HEADER_X_FORWARDED_FOR
+            headers: Request::HEADER_X_FORWARDED_FOR
                 | Request::HEADER_X_FORWARDED_HOST
                 | Request::HEADER_X_FORWARDED_PORT
                 | Request::HEADER_X_FORWARDED_PROTO
@@ -83,8 +79,7 @@ return Application::configure(
     ): void {
 
         $exceptions->shouldRenderJsonWhen(
-            fn (Request $request) =>
-                $request->is('api/*')
+            fn (Request $request) => $request->is('api/*')
         );
     })
 

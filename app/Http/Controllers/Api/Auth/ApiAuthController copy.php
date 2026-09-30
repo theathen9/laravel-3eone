@@ -35,7 +35,7 @@ class ApiAuthController extends Controller
             $validated['password']
         );
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid username or password.',
@@ -52,10 +52,10 @@ class ApiAuthController extends Controller
             'message' => 'Login successful.',
 
             'user' => [
-                'id'       => $user->user_id,
+                'id' => $user->user_id,
                 'username' => $user->username,
-                'email'    => $user->email,
-                'role'     => $user->role->role_name,
+                'email' => $user->email,
+                'role' => $user->role->role_name,
             ],
 
             'tokens' => $tokens,
@@ -79,7 +79,7 @@ class ApiAuthController extends Controller
             $validated['refresh_token']
         );
 
-        if (!$tokens) {
+        if (! $tokens) {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid or expired refresh token.',
@@ -89,7 +89,7 @@ class ApiAuthController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Token refreshed successfully.',
-            'tokens'  => $tokens,
+            'tokens' => $tokens,
         ]);
     }
 
@@ -100,7 +100,7 @@ class ApiAuthController extends Controller
     {
         $accessToken = $request->bearerToken();
 
-        if (!$accessToken) {
+        if (! $accessToken) {
             return response()->json([
                 'success' => false,
                 'message' => 'Access token is required.',
@@ -115,26 +115,26 @@ class ApiAuthController extends Controller
         ]);
     }
 
-public function token(Request $request)
-{
-    $user = $request->user();
+    public function token(Request $request)
+    {
+        $user = $request->user();
 
-    if (!$user) {
+        if (! $user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthenticated.',
+            ], 401);
+        }
+
         return response()->json([
-            'success' => false,
-            'message' => 'Unauthenticated.',
-        ], 401);
+            'success' => true,
+            'message' => 'Authenticated token.',
+            'user' => [
+                'id' => $user->user_id,
+                'username' => $user->username,
+                'email' => $user->email,
+                'role' => $user->role->role_name,
+            ],
+        ]);
     }
-
-    return response()->json([
-        'success' => true,
-        'message' => 'Authenticated token.',
-        'user' => [
-            'id'       => $user->user_id,
-            'username' => $user->username,
-            'email'    => $user->email,
-            'role'     => $user->role->role_name,
-        ],
-    ]);
-}
 }

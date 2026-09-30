@@ -17,7 +17,6 @@ return new class extends Migration
              */
             $table->id('token_id');
 
-
             /*
              * User
              */
@@ -25,12 +24,10 @@ return new class extends Migration
                 ->constrained('tblUsers', 'user_id')
                 ->cascadeOnDelete();
 
-
             /*
              * Browser / Device Identifier
              */
             $table->string('device_id', 100);
-
 
             /*
              * JWT ID
@@ -38,12 +35,10 @@ return new class extends Migration
             $table->uuid('jti')
                 ->unique();
 
-
             /*
              * JWT Access Token Expiration
              */
             $table->timestampTz('access_expiry');
-
 
             /*
              * SHA-256 hash of refresh token
@@ -51,12 +46,10 @@ return new class extends Migration
             $table->char('refresh_token', 64)
                 ->unique();
 
-
             /*
              * Refresh-token expiration
              */
             $table->timestampTz('refresh_expiry');
-
 
             /*
              * Human-readable device information
@@ -64,13 +57,11 @@ return new class extends Migration
             $table->string('device_info', 255)
                 ->nullable();
 
-
             /*
              * Browser / Client User-Agent
              */
             $table->text('user_agent')
                 ->nullable();
-
 
             /*
              * Client IP address
@@ -78,13 +69,11 @@ return new class extends Migration
             $table->string('ip_address', 45)
                 ->nullable();
 
-
             /*
              * Session created timestamp
              */
             $table->timestampTz('created_at')
                 ->useCurrent();
-
 
             /*
              * NULL = active
@@ -92,7 +81,6 @@ return new class extends Migration
              */
             $table->timestampTz('revoked_at')
                 ->nullable();
-
 
             /*
              * Indexes

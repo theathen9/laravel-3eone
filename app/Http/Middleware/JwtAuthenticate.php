@@ -28,13 +28,12 @@ class JwtAuthenticate
 
         $token = $request->bearerToken();
 
-        if (!$token) {
+        if (! $token) {
             return response()->json([
                 'success' => false,
                 'message' => 'Access token is required.',
             ], 401);
         }
-
 
         /*
         |--------------------------------------------------------------------------
@@ -46,13 +45,12 @@ class JwtAuthenticate
             $token
         );
 
-        if (!$payload) {
+        if (! $payload) {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid or expired access token.',
             ], 401);
         }
-
 
         /*
         |--------------------------------------------------------------------------
@@ -73,13 +71,12 @@ class JwtAuthenticate
             )
             ->first();
 
-        if (!$userToken) {
+        if (! $userToken) {
             return response()->json([
                 'success' => false,
                 'message' => 'Access token has been revoked.',
             ], 401);
         }
-
 
         /*
         |--------------------------------------------------------------------------
@@ -96,13 +93,12 @@ class JwtAuthenticate
             ->where('status', true)
             ->first();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'success' => false,
                 'message' => 'User not found or disabled.',
             ], 401);
         }
-
 
         /*
         |--------------------------------------------------------------------------
@@ -124,7 +120,6 @@ class JwtAuthenticate
             ], 401);
         }
 
-
         /*
         |--------------------------------------------------------------------------
         | Make authenticated user available
@@ -139,7 +134,6 @@ class JwtAuthenticate
         $request->setUserResolver(
             fn () => $user
         );
-
 
         /*
         |--------------------------------------------------------------------------
@@ -156,7 +150,6 @@ class JwtAuthenticate
             'user_token',
             $userToken
         );
-
 
         return $next($request);
     }

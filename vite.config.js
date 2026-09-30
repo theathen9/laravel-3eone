@@ -10,6 +10,7 @@ export default defineConfig({
                 "resources/css/app.css",
                 "resources/css/signin.css",
                 "resources/js/app.js",
+                'resources/js/dashboard.js',
             ],
             refresh: true,
             fonts: [

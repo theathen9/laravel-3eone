@@ -36,7 +36,7 @@ class ApiAuth
 
         $accessToken = $request->bearerToken();
 
-        if (!$accessToken) {
+        if (! $accessToken) {
             $accessToken = $request->cookie(
                 'access-token'
             );
@@ -48,7 +48,7 @@ class ApiAuth
         |--------------------------------------------------------------------------
         */
 
-        if (!$accessToken) {
+        if (! $accessToken) {
             return response()->json([
                 'success' => false,
                 'message' => 'Access token is required.',
@@ -68,7 +68,7 @@ class ApiAuth
             $accessToken
         );
 
-        if (!$payload) {
+        if (! $payload) {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid or expired access token.',
@@ -136,7 +136,7 @@ class ApiAuth
         |--------------------------------------------------------------------------
         */
 
-        if (!$userToken) {
+        if (! $userToken) {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid or revoked access token.',
@@ -151,7 +151,7 @@ class ApiAuth
 
         $user = $userToken->user;
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'success' => false,
                 'message' => 'User not found.',
@@ -164,7 +164,7 @@ class ApiAuth
         |--------------------------------------------------------------------------
         */
 
-        if (!$user->status) {
+        if (! $user->status) {
             return response()->json([
                 'success' => false,
                 'message' => 'User account is disabled.',

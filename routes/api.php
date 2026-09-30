@@ -1,11 +1,11 @@
 <?php
+
 // ./routes/api.php
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Auth\ApiAuthController;
 use App\Http\Controllers\Api\UserController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,8 +29,7 @@ Route::prefix('v1')->group(function () {
     Route::post('/auth/refresh', [
         ApiAuthController::class,
         'refresh',
-    ])->name('api.v1.auth.refresh');
-
+    ])->name('auth.refresh');
 
     /*
     |--------------------------------------------------------------------------
@@ -50,18 +49,16 @@ Route::prefix('v1')->group(function () {
             'logout',
         ])->name('api.v1.auth.logout');
 
-
         /*
         |--------------------------------------------------------------------------
         | Users - JWT Protected
         |--------------------------------------------------------------------------
         */
 
- Route::get('/users', [UserController::class, 'index']);
-    Route::get('/users/{id}', [UserController::class, 'show']);
+        Route::get('/users', [UserController::class, 'index']);
+        Route::get('/users/{id}', [UserController::class, 'show']);
 
     });
-
 
     /*
     |--------------------------------------------------------------------------
@@ -89,15 +86,15 @@ Route::prefix('v1')->group(function () {
         ]);
     });
     Route::get('/test-session', function (Request $request) {
-    $count = $request->session()->get('count', 0) + 1;
+        $count = $request->session()->get('count', 0) + 1;
 
-    $request->session()->put('count', $count);
+        $request->session()->put('count', $count);
 
-    return response()->json([
-        'count' => $count,
-        'session_id' => $request->session()->getId(),
-        'session' => $request->session()->all(),
-    ]);
-});
+        return response()->json([
+            'count' => $count,
+            'session_id' => $request->session()->getId(),
+            'session' => $request->session()->all(),
+        ]);
+    });
 
 });

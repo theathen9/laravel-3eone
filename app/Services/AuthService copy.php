@@ -38,16 +38,16 @@ class AuthService
             })
             ->first();
 
-        if (!$user) {
+        if (! $user) {
             return null;
         }
 
         // Prevent disabled users from logging in.
-        if (!$user->status) {
+        if (! $user->status) {
             return null;
         }
 
-        if (!Hash::check(
+        if (! Hash::check(
             $password,
             $user->password
         )) {
@@ -66,7 +66,6 @@ class AuthService
 
         return $user;
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -96,7 +95,6 @@ class AuthService
             'reference_type' => $user->reference_type,
         ]);
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -185,7 +183,6 @@ class AuthService
         ];
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Refresh API Tokens
@@ -240,7 +237,7 @@ class AuthService
             )
             ->first();
 
-        if (!$token) {
+        if (! $token) {
             return null;
         }
 
@@ -249,7 +246,7 @@ class AuthService
         /*
          * Token belongs to a disabled/deleted user.
          */
-        if (!$user || !$user->status) {
+        if (! $user || ! $user->status) {
             return null;
         }
 
@@ -278,7 +275,6 @@ class AuthService
             );
         });
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -318,7 +314,6 @@ class AuthService
                 'revoked_at' => now(),
             ]);
     }
-
 
     /*
     |--------------------------------------------------------------------------

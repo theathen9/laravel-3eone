@@ -172,8 +172,8 @@ class JwtService
         $payload = $this->decode($token);
 
         if (
-            !$payload ||
-            !isset($payload['exp'])
+            ! $payload ||
+            ! isset($payload['exp'])
         ) {
             return null;
         }

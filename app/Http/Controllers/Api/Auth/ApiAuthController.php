@@ -35,7 +35,7 @@ class ApiAuthController extends Controller
             $validated['password']
         );
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid username or password.',
@@ -65,36 +65,66 @@ class ApiAuthController extends Controller
     /**
      * Refresh access token
      */
-
     public function refresh(Request $request)
-{
-    $refreshToken = $request->cookie('refresh-token');
+    {
+        $refreshToken = $request->cookie('refresh-token');
 
-    if (!$refreshToken) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Refresh token is missing.',
-        ], 401);
+        if (! $refreshToken) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Refresh token is missing.',
+            ], 401);
+        }
+
+        $tokens = $this->authService->refreshTokens(
+            $request,
+            $refreshToken
+        );
+
+        if (! $tokens) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid or expired refresh token.',
+            ], 401);
+        }
+
+        $secure = app()->environment('production');
+
+        $response = response()->json([
+            'success' => true,
+            'message' => 'Token refreshed successfully.',
+        ]);
+
+        $response->withCookie(
+            cookie(
+                'access-token',
+                $tokens['access_token'],
+                ceil($tokens['expires_in'] / 60),
+                '/',
+                null,
+                $secure,
+                true,
+                false,
+                'Lax'
+            )
+        );
+
+        // $response->withCookie(
+        //     cookie(
+        //         'refresh-token',
+        //         $tokens['refresh_token'],
+        //         ceil($tokens['refresh_expires_in'] / 60),
+        //         '/',
+        //         null,
+        //         $secure,
+        //         true,
+        //         false,
+        //         'Lax'
+        //     )
+        // );
+
+        return $response;
     }
-
-    $tokens = $this->authService->refreshTokens(
-        $request,
-        $refreshToken
-    );
-
-    if (!$tokens) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Invalid or expired refresh token.',
-        ], 401);
-    }
-
-    return response()->json([
-        'success' => true,
-        'message' => 'Token refreshed successfully.',
-        'tokens' => $tokens,
-    ]);
-}
 
     /**
      * Logout
@@ -103,7 +133,7 @@ class ApiAuthController extends Controller
     {
         $accessToken = $request->bearerToken();
 
-        if (!$accessToken) {
+        if (! $accessToken) {
             return response()->json([
                 'success' => false,
                 'message' => 'Access token is required.',
@@ -117,182 +147,282 @@ class ApiAuthController extends Controller
             'message' => 'Logout successful.',
         ]);
     }
+    /**
+     * Check access token
+     */
+    // public function token(Request $request)
+    // {
+    //     /*
+    //     |--------------------------------------------------------------------------
+    //     | Access token
+    //     |--------------------------------------------------------------------------
+    //     */
 
+    //     $accessToken = $request->cookie('access-token');
+    //     $refreshToken = $request->cookie('refresh-token');
 
-public function token(Request $request)
-{
-    /*
-    |--------------------------------------------------------------------------
-    | Get access token
-    |--------------------------------------------------------------------------
-    */
+    //     if (!$accessToken) {
+    //         $accessToken = $request->bearerToken();
+    //     }
 
-    $accessToken = $request->bearerToken();
-    $refreshToken = $request->bearerToken();
+    //     if (!$accessToken) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Access token is required.',
+    //         ], 401);
+    //     }
 
-    if (!$accessToken) {
-        $accessToken = $request->cookie('access-token');
-    }
+    //     /*
+    //     |--------------------------------------------------------------------------
+    //     | JWT payload
+    //     |--------------------------------------------------------------------------
+    //     */
 
-       if (!$refreshToken) {
-        $refreshToken = $request->cookie('refresh-token');
-    }
+    //     $payload = $this->authService->getTokenPayload(
+    //         $accessToken
+    //     );
 
-    if (!$accessToken) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Access token is required.',
-        ], 401);
-    }
+    //     if (!$payload) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Invalid or expired access token.',
+    //         ], 401);
+    //     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | JWT payload
-    |--------------------------------------------------------------------------
-    */
+    //     /*
+    //     |--------------------------------------------------------------------------
+    //     | Authenticated user
+    //     |--------------------------------------------------------------------------
+    //     */
 
-    $payload = $this->authService->getTokenPayload(
-        $accessToken
-    );
+    //     $user = $request->user();
 
-    if (!$payload) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Invalid or expired access token.',
-        ], 401);
-    }
+    //     if (!$user) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Unauthenticated.',
+    //         ], 401);
+    //     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Authenticated user
-    |--------------------------------------------------------------------------
-    */
+    //     /*
+    //     |--------------------------------------------------------------------------
+    //     | Token database record
+    //     |--------------------------------------------------------------------------
+    //     */
 
-    $user = $request->user();
+    //     $userToken = $request->attributes->get('userToken');
 
-    if (!$user) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Unauthenticated.',
-        ], 401);
-    }
+    //     if (!$userToken) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Token record not found.',
+    //         ], 401);
+    //     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Token record from ApiAuth middleware
-    |--------------------------------------------------------------------------
-    */
+    //     /*
+    //     |--------------------------------------------------------------------------
+    //     | Expiration
+    //     |--------------------------------------------------------------------------
+    //     */
 
-    $userToken = $request->attributes->get('userToken');
+    //     $now = now()->timestamp;
 
-    if (!$userToken) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Token record not found.',
-        ], 401);
-    }
+    //     $issuedAt = isset($payload['iat'])
+    //         ? (int) $payload['iat']
+    //         : null;
 
-    /*
-    |--------------------------------------------------------------------------
-    | Calculate expiration
-    |--------------------------------------------------------------------------
-    */
+    //     $expiresAt = isset($payload['exp'])
+    //         ? (int) $payload['exp']
+    //         : null;
 
-    $now = now()->timestamp;
+    //     $remainingSeconds = $expiresAt !== null
+    //         ? max(0, $expiresAt - $now)
+    //         : null;
 
-    $issuedAt = isset($payload['iat'])
-        ? (int) $payload['iat']
-        : null;
+    //     /*
+    //     |--------------------------------------------------------------------------
+    //     | Response
+    //     |--------------------------------------------------------------------------
+    //     */
 
-    $expiresAt = isset($payload['exp'])
-        ? (int) $payload['exp']
-        : null;
+    //     return response()->json([
+    //         'success' => true,
 
-    $remainingSeconds = $expiresAt
-        ? max(0, $expiresAt - $now)
-        : null;
+    //         'message' => 'Token is valid.',
 
-    /*
-    |--------------------------------------------------------------------------
-    | Return response
-    |--------------------------------------------------------------------------
-    */
+    //         'user' => [
+    //             'id' => $user->user_id,
+    //             'username' => $user->username,
+    //             'email' => $user->email,
+    //             'role' => $user->role?->role_name,
+    //         ],
 
-    return response()->json([
-        'success' => true,
+    //         'token' => [
+    //             'type' => 'Bearer',
 
-        'message' => 'Token is valid.',
+    //             'valid' => true,
 
-         'user' => [
-            'id' => $user->user_id,
+    //             'algorithm' => $payload['alg'] ?? 'HS256',
 
-            'username' => $user->username,
+    //             'issuer' => $payload['iss'] ?? null,
 
-            'email' => $user->email,
+    //             'type_claim' => $payload['type'] ?? null,
 
-            'role' => $user->role->role_name,
-        ],
+    //             'jti' => $payload['jti'] ?? null,
 
+    //             'subject' => $payload['sub'] ?? null,
+    //             'access_token' => $accessToken ?? null,
+    //             'refresh_token' => $refreshToken ?? null,
+
+    //             'issued_at' => $issuedAt
+    //                 ? date(
+    //                     'Y-m-d H:i:s',
+    //                     $issuedAt
+    //                 )
+    //                 : null,
+
+    //             'expires_at' => $expiresAt
+    //                 ? date(
+    //                     'Y-m-d H:i:s',
+    //                     $expiresAt
+    //                 )
+    //                 : null,
+
+    //             'remaining_seconds' =>
+    //                 $remainingSeconds,
+
+    //             'remaining_minutes' =>
+    //                 $remainingSeconds !== null
+    //                     ? (int) ceil(
+    //                         $remainingSeconds / 60
+    //                     )
+    //                     : null,
+    //         ],
+    //     ]);
+    // }
+
+    public function token(Request $request)
+    {
         /*
         |--------------------------------------------------------------------------
-        | Raw tokens
+        | Get validated authentication data from ApiAuth middleware
         |--------------------------------------------------------------------------
         */
 
+        $payload = $request->attributes->get('jwt');
+
+        $accessToken = $request->attributes->get(
+            'accessToken'
+        );
+
+        $userToken = $request->attributes->get(
+            'userToken'
+        );
+
+        $user = $request->user();
+
+        if (
+            ! $payload ||
+            ! $accessToken ||
+            ! $userToken ||
+            ! $user
+        ) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthenticated.',
+            ], 401);
+        }
 
         /*
-         * IMPORTANT:
-         * refresh_token is stored hashed in the database.
-         *
-         * Therefore we CANNOT recover the original
-         * refresh token from tblUserTokens.
-         */
+        |--------------------------------------------------------------------------
+        | Get refresh token
+        |--------------------------------------------------------------------------
+        |
+        | The raw refresh token is available from the cookie.
+        | tblUserTokens stores only its SHA-256 hash.
+        |
+        */
 
-        'token' => [
-            'type' => 'Bearer',
+        $refreshToken = $request->cookie(
+            'refresh-token'
+        );
 
-            'valid' => true,
+        /*
+        |--------------------------------------------------------------------------
+        | Calculate expiration
+        |--------------------------------------------------------------------------
+        */
 
-            'algorithm' => $payload['alg'] ?? 'HS256',
+        $now = now()->timestamp;
 
-            'issuer' => $payload['iss'] ?? null,
+        $issuedAt = isset($payload['iat'])
+            ? (int) $payload['iat']
+            : null;
 
-            'type_claim' => $payload['type'] ?? null,
+        $expiresAt = isset($payload['exp'])
+            ? (int) $payload['exp']
+            : null;
 
-            'jti' => $payload['jti'] ?? null,
+        $remainingSeconds = $expiresAt !== null
+            ? max(0, $expiresAt - $now)
+            : null;
 
-            'subject' => $payload['sub'] ?? null,
+        /*
+        |--------------------------------------------------------------------------
+        | Response
+        |--------------------------------------------------------------------------
+        */
 
-            'issued_at' => $issuedAt
-                ? date(
-                    'Y-m-d H:i:s',
-                    $issuedAt
-                )
-                : null,
-        'access_token' => $accessToken,
-        'refresh_token' => $refreshToken,
+        return response()->json([
+            'success' => true,
 
+            'message' => 'Token is valid.',
 
+            'user' => [
+                'id' => $user->user_id,
+                'username' => $user->username,
+                'email' => $user->email,
+                'role' => $user->role?->role_name,
+            ],
 
-            'expires_at' => $expiresAt
-                ? date(
-                    'Y-m-d H:i:s',
-                    $expiresAt
-                )
-                : null,
+            'token' => [
+                'type' => 'Bearer',
 
-            'remaining_seconds' =>
-                $remainingSeconds,
+                'valid' => true,
 
-            'remaining_minutes' =>
-                $remainingSeconds !== null
-                    ? (int) ceil(
-                        $remainingSeconds / 60
+                'algorithm' => $payload['alg'] ?? 'HS256',
+
+                'issuer' => $payload['iss'] ?? null,
+
+                'type_claim' => $payload['type'] ?? null,
+
+                'jti' => $payload['jti'] ?? null,
+
+                'subject' => $payload['sub'] ?? null,
+                'access_token' => $accessToken ?? null,
+                'refresh_token' => $refreshToken ?? null,
+                'issued_at' => $issuedAt
+                    ? date(
+                        'Y-m-d H:i:s',
+                        $issuedAt
                     )
                     : null,
-        ],
 
-       
-    ]);
-}
+                'expires_at' => $expiresAt
+                    ? date(
+                        'Y-m-d H:i:s',
+                        $expiresAt
+                    )
+                    : null,
+
+                'remaining_seconds' => $remainingSeconds,
+
+                'remaining_minutes' => $remainingSeconds !== null
+                        ? (int) ceil(
+                            $remainingSeconds / 60
+                        )
+                        : null,
+            ],
+        ]);
+    }
 }

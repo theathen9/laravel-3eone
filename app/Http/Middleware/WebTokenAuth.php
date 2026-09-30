@@ -12,8 +12,7 @@ class WebTokenAuth
 {
     public function __construct(
         private JwtService $jwtService
-    ) {
-    }
+    ) {}
 
     public function handle(
         Request $request,
@@ -28,10 +27,9 @@ class WebTokenAuth
 
         $accessToken = $request->cookie('access-token');
 
-        if (!$accessToken) {
+        if (! $accessToken) {
             return redirect()->route('auth.signin');
         }
-
 
         /*
         |--------------------------------------------------------------------------
@@ -43,10 +41,9 @@ class WebTokenAuth
             $accessToken
         );
 
-        if (!$payload) {
+        if (! $payload) {
             return redirect()->route('auth.signin');
         }
-
 
         /*
         |--------------------------------------------------------------------------
@@ -58,10 +55,9 @@ class WebTokenAuth
             ?? $payload['user_id']
             ?? null;
 
-        if (!$userId) {
+        if (! $userId) {
             return redirect()->route('auth.signin');
         }
-
 
         /*
         |--------------------------------------------------------------------------
@@ -75,10 +71,9 @@ class WebTokenAuth
             ->where('status', 1)
             ->first();
 
-        if (!$user) {
+        if (! $user) {
             return redirect()->route('auth.signin');
         }
-
 
         /*
         |--------------------------------------------------------------------------
@@ -89,7 +84,6 @@ class WebTokenAuth
         $request->setUserResolver(
             fn () => $user
         );
-
 
         /*
         |--------------------------------------------------------------------------

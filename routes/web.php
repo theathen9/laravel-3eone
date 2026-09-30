@@ -1,26 +1,15 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\Request;
-
-use App\Models\User;
-
-
-use App\Http\Controllers\Auth\WebAuthController;
-use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Account\DashboardController as AccountDashboardController;
-
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Auth\WebAuthController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Web Authentication
+| Authentication
 |--------------------------------------------------------------------------
-|
-| Do NOT use Laravel's guest middleware here if JWT cookies are
-| your authentication system.
-|
 */
 
 Route::prefix('auth')
@@ -38,13 +27,6 @@ Route::prefix('auth')
             'login',
         ])->name('login');
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | Forgot password
-        |--------------------------------------------------------------------------
-        */
-
         Route::get('/forgot-password', [
             WebAuthController::class,
             'showForgotPassword',
@@ -54,13 +36,6 @@ Route::prefix('auth')
             WebAuthController::class,
             'sendResetLink',
         ])->name('forgot.submit');
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Reset password
-        |--------------------------------------------------------------------------
-        */
 
         Route::get('/reset-password/{token}', [
             WebAuthController::class,
@@ -73,23 +48,16 @@ Route::prefix('auth')
         ])->name('reset.submit');
     });
 
-
 /*
 |--------------------------------------------------------------------------
 | Logout
 |--------------------------------------------------------------------------
-|
-| Use JWT authentication, NOT Laravel auth middleware.
-|
 */
 
 Route::post('/auth/logout', [
     WebAuthController::class,
     'logout',
-])
-    ->middleware('auth')
-    ->name('auth.logout');
-
+])->name('auth.logout');
 
 /*
 |--------------------------------------------------------------------------
@@ -97,13 +65,9 @@ Route::post('/auth/logout', [
 |--------------------------------------------------------------------------
 */
 
-Route::get('/', function () {
+Route::get('/', function (Request $request) {
 
-    $user = request()->user();
-
-    if (!$user) {
-        return redirect()->route('auth.signin');
-    }
+    $user = $request->user();
 
     $role = strtolower(
         trim($user->role?->role_name ?? '')
@@ -111,18 +75,14 @@ Route::get('/', function () {
 
     return match ($role) {
 
-        'admin' =>
-            redirect()->route('admin.dashboard'),
+        'admin' => redirect()->route('admin.dashboard'),
 
-        'accountant', 'account' =>
-            redirect()->route('account.dashboard'),
+        'accountant', 'account' => redirect()->route('account.dashboard'),
 
-        default =>
-            abort(403),
+        default => abort(403),
     };
 
 })->middleware('auth')->name('home');
-
 
 /*
 |--------------------------------------------------------------------------
@@ -144,7 +104,6 @@ Route::middleware([
         ])->name('dashboard');
     });
 
-
 /*
 |--------------------------------------------------------------------------
 | Account
@@ -165,16 +124,23 @@ Route::middleware([
         ])->name('dashboard');
     });
 
-    Route::get('/debug-auth', function () {
+/*
+|--------------------------------------------------------------------------
+| Debug
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/debug-auth', function (Request $request) {
     return response()->json([
-        'auth_check' => Auth::check(),
-        'user' => Auth::user(),
-        'session_id' => session()->getId(),
-        'session' => session()->all(),
+        'auth_check' => $request->user() !== null,
+        'user' => $request->user(),
+        'session_id' => $request->session()->getId(),
+        'session' => $request->session()->all(),
     ]);
 });
 
 Route::get('/test-session', function (Request $request) {
+
     $count = $request->session()->get('count', 0) + 1;
 
     $request->session()->put('count', $count);

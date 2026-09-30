@@ -32,8 +32,8 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 
-* copy.php
-*copy.php
+*copy*.php
+*copy*.yml
 
 .vercel
 .env*

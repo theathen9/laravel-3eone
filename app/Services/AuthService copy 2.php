@@ -43,21 +43,21 @@ class AuthService
             })
             ->first();
 
-        if (!$user) {
+        if (! $user) {
             return null;
         }
 
         /*
          * Disabled users cannot login.
          */
-        if (!$user->status) {
+        if (! $user->status) {
             return null;
         }
 
         /*
          * Verify password.
          */
-        if (!Hash::check(
+        if (! Hash::check(
             $password,
             $user->password
         )) {
@@ -120,7 +120,7 @@ class AuthService
         /*
          * First login from this browser.
          */
-        if (!$deviceId) {
+        if (! $deviceId) {
             $deviceId = (string) Str::uuid();
         }
 
@@ -234,7 +234,7 @@ class AuthService
             $accessToken
         );
 
-        if (!$payload || empty($payload['jti'])) {
+        if (! $payload || empty($payload['jti'])) {
             throw new \RuntimeException(
                 'Unable to create JWT JTI.'
             );
@@ -371,7 +371,7 @@ class AuthService
             )
             ->first();
 
-        if (!$token) {
+        if (! $token) {
             return null;
         }
 
@@ -380,7 +380,7 @@ class AuthService
         /*
          * User no longer exists or is disabled.
          */
-        if (!$user || !$user->status) {
+        if (! $user || ! $user->status) {
             return null;
         }
 
@@ -440,7 +440,7 @@ class AuthService
             $accessToken
         );
 
-        if (!$payload) {
+        if (! $payload) {
             return;
         }
 
@@ -449,7 +449,7 @@ class AuthService
          */
         $jti = $payload['jti'] ?? null;
 
-        if (!$jti) {
+        if (! $jti) {
             return;
         }
 

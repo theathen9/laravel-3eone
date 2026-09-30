@@ -32,190 +32,185 @@ class WebAuthController extends Controller
      * - API refresh token
      */
     public function login(Request $request)
-{
-    $validated = $request->validate([
-        'username' => [
-            'required',
-            'string',
-            'max:100',
-        ],
-        'password' => [
-            'required',
-            'string',
-        ],
-    ]);
+    {
 
-    $user = $this->authService->authenticate(
-        $validated['username'],
-        $validated['password']
-    );
+        $validated = $request->validate([
+            'username' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+            'password' => [
+                'required',
+                'string',
+            ],
+        ]);
 
-    if (!$user) {
-        return back()
-            ->withInput(
-                $request->only('username')
-            )
-            ->withErrors([
-                'username' => 'Invalid username or password.',
-            ]);
-    }
+        $user = $this->authService->authenticate(
+            $validated['username'],
+            $validated['password']
+        );
 
-    /*
-     * Create JWT + refresh token.
-     */
-    $tokens = $this->authService->createTokens(
-        $request,
-        $user
-    );
-
-    /*
-     * Create Laravel web session.
-     */
-    $this->authService->loginWeb(
-        $request,
-        $user
-    );
-
-    /*
-     * JWT expiration returned by AuthService.
-     *
-     * This is already calculated from:
-     *
-     * $accessPayload['exp']
-     */
-    $accessTokenTtl = max(
-        1,
-        (int) ceil(
-            $tokens['expires_in'] / 60
-        )
-    );
-
-    $refreshTokenTtl = max(
-        1,
-        (int) ceil(
-            $tokens['refresh_expires_in'] / 60
-        )
-    );
-
-    /*
-     * Frontend display data.
-     *
-     * No password.
-     * No JWT.
-     * No refresh token.
-     */
-    $cUser = [
-        'id' => $user->user_id,
-        'username' => $user->username,
-        'role' => $user->role->role_name,
-    ];
-
-    /*
-     * Determine dashboard.
-     */
-    $response = match (
-        strtolower(
-            $user->role->role_name
-        )
-    ) {
-        'admin' =>
-            redirect()->route('admin.dashboard'),
-
-        'accountant' =>
-            redirect()->route('account.dashboard'),
-
-        'teacher' =>
-            redirect()->route('teacher.dashboard'),
-
-        'student' =>
-            redirect()->route('student.dashboard'),
-
-        default =>
-            abort(403, 'Invalid user role.'),
-    };
-
-    $secure = app()->environment('production');
-
-    return $response
+        if (! $user) {
+            return back()
+                ->withInput(
+                    $request->only('username')
+                )
+                ->withErrors([
+                    'username' => 'Invalid username or password.',
+                ]);
+        }
 
         /*
-         * Access token
-         *
-         * HttpOnly = true
+         * Create JWT + refresh token.
          */
-        ->withCookie(
-            cookie(
-                'access-token',
-                $tokens['access_token'],
-                $accessTokenTtl,
-                '/',
-                null,
-                $secure,
-                true,
-                false,
-                'Lax'
-            )
-        )
+        $tokens = $this->authService->createTokens(
+            $request,
+            $user
+        );
 
         /*
-         * Refresh token
-         *
-         * HttpOnly = true
+         * Create Laravel web session.
          */
-        ->withCookie(
-            cookie(
-                'refresh-token',
-                $tokens['refresh_token'],
-                $refreshTokenTtl,
-                '/',
-                null,
-                $secure,
-                true,
-                false,
-                'Lax'
-            )
-        )
+        $this->authService->loginWeb(
+            $request,
+            $user
+        );
 
         /*
-         * Device ID
+         * JWT expiration returned by AuthService.
          *
-         * HttpOnly = true
-         */
-        ->withCookie(
-            cookie(
-                'device_id',
-                $tokens['device_id'],
-                60 * 24 * 7,
-                '/',
-                null,
-                $secure,
-                true,
-                false,
-                'Lax'
-            )
-        )
-
-        /*
-         * Frontend user information.
+         * This is already calculated from:
          *
-         * HttpOnly = false
-         * because JavaScript may need it.
+         * $accessPayload['exp']
          */
-        ->withCookie(
-            cookie(
-                'c_user',
-                json_encode($cUser),
-                $accessTokenTtl,
-                '/',
-                null,
-                $secure,
-                false,
-                false,
-                'Lax'
+        $accessTokenTtl = max(
+            1,
+            (int) ceil(
+                $tokens['expires_in'] / 60
             )
         );
-}
 
+        $refreshTokenTtl = max(
+            1,
+            (int) ceil(
+                $tokens['refresh_expires_in'] / 60
+            )
+        );
+
+        /*
+         * Frontend display data.
+         *
+         * No password.
+         * No JWT.
+         * No refresh token.
+         */
+        $cUser = [
+            'id' => $user->user_id,
+            'username' => $user->username,
+            'role' => $user->role->role_name,
+        ];
+
+        /*
+         * Determine dashboard.
+         */
+        $response = match (
+            strtolower(
+                $user->role->role_name
+            )
+        ) {
+            'admin' => redirect()->route('admin.dashboard'),
+
+            'accountant' => redirect()->route('account.dashboard'),
+
+            'teacher' => redirect()->route('teacher.dashboard'),
+
+            'student' => redirect()->route('student.dashboard'),
+
+            default => abort(403, 'Invalid user role.'),
+        };
+
+        $secure = app()->environment('production');
+
+        return $response
+
+            /*
+             * Access token
+             *
+             * HttpOnly = true
+             */
+            ->withCookie(
+                cookie(
+                    'access-token',
+                    $tokens['access_token'],
+                    $accessTokenTtl,
+                    '/',
+                    null,
+                    $secure,
+                    true,
+                    false,
+                    'Lax'
+                )
+            )
+
+            /*
+             * Refresh token
+             *
+             * HttpOnly = true
+             */
+            ->withCookie(
+                cookie(
+                    'refresh-token',
+                    $tokens['refresh_token'],
+                    $refreshTokenTtl,
+                    '/',
+                    null,
+                    $secure,
+                    true,
+                    false,
+                    'Lax'
+                )
+            )
+
+            /*
+             * Device ID
+             *
+             * HttpOnly = true
+             */
+            ->withCookie(
+                cookie(
+                    'device_id',
+                    $tokens['device_id'],
+                    60 * 24 * 30,
+                    '/',
+                    null,
+                    $secure,
+                    true,
+                    false,
+                    'Lax'
+                )
+            )
+
+            /*
+             * Frontend user information.
+             *
+             * HttpOnly = false
+             * because JavaScript may need it.
+             */
+            ->withCookie(
+                cookie(
+                    'c_user',
+                    json_encode($cUser),
+                    $accessTokenTtl,
+                    '/',
+                    null,
+                    $secure,
+                    false,
+                    false,
+                    'Lax'
+                )
+            );
+    }
 
     /**
      * Show forgot-password page.
@@ -246,7 +241,7 @@ class WebAuthController extends Controller
         /*
          * Don't reveal whether the email exists.
          */
-        if (!$user) {
+        if (! $user) {
             return back()->with(
                 'status',
                 'If that email exists, a password reset link has been generated.'
@@ -309,12 +304,11 @@ class WebAuthController extends Controller
             )
             ->first();
 
-        if (!$user) {
+        if (! $user) {
             return redirect()
                 ->route('auth.forgot')
                 ->withErrors([
-                    'email' =>
-                        'This password reset link is invalid or expired.',
+                    'email' => 'This password reset link is invalid or expired.',
                 ]);
         }
 
@@ -358,12 +352,11 @@ class WebAuthController extends Controller
             )
             ->first();
 
-        if (!$user) {
+        if (! $user) {
             return redirect()
                 ->route('auth.forgot')
                 ->withErrors([
-                    'email' =>
-                        'This password reset link is invalid or expired.',
+                    'email' => 'This password reset link is invalid or expired.',
                 ]);
         }
 

@@ -16,7 +16,7 @@ class RoleMiddleware
 
         $user = $request->user();
 
-        if (!$user) {
+        if (! $user) {
             return redirect()->route('auth.signin');
         }
 
@@ -29,7 +29,7 @@ class RoleMiddleware
             $roles
         );
 
-        if (!in_array($role, $roles, true)) {
+        if (! in_array($role, $roles, true)) {
             abort(403, 'Unauthorized.');
         }
 

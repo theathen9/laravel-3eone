@@ -1,8 +1,11 @@
 <?php
-
-use App\Http\Controllers\Api\Auth\ApiAuthController;
+// ./routes/api.php
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\Auth\ApiAuthController;
+use App\Http\Controllers\Api\UserController;
+use Illuminate\Support\Facades\Auth;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -54,12 +57,8 @@ Route::prefix('v1')->group(function () {
         |--------------------------------------------------------------------------
         */
 
-        Route::get('/users', function () {
-            return response()->json([
-                'success' => true,
-                'message' => 'Users API',
-            ]);
-        });
+ Route::get('/users', [UserController::class, 'index']);
+    Route::get('/users/{id}', [UserController::class, 'show']);
 
     });
 
@@ -81,5 +80,24 @@ Route::prefix('v1')->group(function () {
             ],
         ]);
     });
+    Route::get('/debug-auth', function () {
+        return response()->json([
+            'auth_check' => Auth::check(),
+            'user' => Auth::user(),
+            'session_id' => session()->getId(),
+            'session' => session()->all(),
+        ]);
+    });
+    Route::get('/test-session', function (Request $request) {
+    $count = $request->session()->get('count', 0) + 1;
+
+    $request->session()->put('count', $count);
+
+    return response()->json([
+        'count' => $count,
+        'session_id' => $request->session()->getId(),
+        'session' => $request->session()->all(),
+    ]);
+});
 
 });

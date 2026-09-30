@@ -26,8 +26,9 @@ return new class extends Migration
             $table->foreignId('role_id')
                 ->constrained('tblRoles', 'role_id');
 
-            $table->boolean('status')
-                ->default(true);
+            $table->integer('status')
+            ->default(1);
+
 
             $table->timestamp('last_login')
                 ->nullable();

@@ -6,42 +6,66 @@ use App\Models\User;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Illuminate\Support\Str;
+use RuntimeException;
 use Throwable;
 
 class JwtService
 {
     private string $secret;
-
     private string $algorithm;
-
     private string $issuer;
-
     private int $accessLifetime;
+    private int $refreshLifetime;
 
     public function __construct()
     {
-        $this->secret = (string) config(
-            'jwt.secret'
-        );
-
-        $this->algorithm = (string) config(
-            'jwt.algorithm',
-            'HS256'
-        );
-
-        $this->issuer = (string) config(
-            'jwt.issuer',
-            '3eone-academy'
-        );
-
+        $this->secret = (string) config('jwt.secret');
+        $this->algorithm = (string) config('jwt.algorithm');
+        $this->issuer = (string) config('jwt.issuer');
         $this->accessLifetime = (int) config(
-            'jwt.access_ttl',
-            900
+            'jwt.access_ttl'
+        );
+        $this->refreshLifetime = (int) config(
+            'jwt.refresh_ttl'
         );
 
         if ($this->secret === '') {
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 'JWT_SECRET is not configured.'
+            );
+        }
+
+        if ($this->algorithm === '') {
+            throw new RuntimeException(
+                'JWT_ALGORITHM is not configured.'
+            );
+        }
+
+        if ($this->issuer === '') {
+            throw new RuntimeException(
+                'JWT_ISSUER is not configured.'
+            );
+        }
+
+        if ($this->accessLifetime <= 0) {
+            throw new RuntimeException(
+                'JWT_ACCESS_TTL must be greater than zero.'
+            );
+        }
+        if ($this->refreshLifetime <= 0) {
+            throw new RuntimeException(
+                'JWT_REFRESH_TTL must be greater than zero.'
+            );
+        }
+
+        /*
+         * If this application is intentionally HS256-only,
+         * enforce that rather than allowing configuration
+         * to accidentally switch algorithms.
+         */
+        if ($this->algorithm !== 'HS256') {
+            throw new RuntimeException(
+                'Only HS256 is allowed.'
             );
         }
     }
@@ -55,17 +79,11 @@ class JwtService
 
         $payload = [
             'iss' => $this->issuer,
-
             'sub' => (string) $user->user_id,
-
             'jti' => (string) Str::uuid(),
-
             'iat' => $now,
-
             'nbf' => $now,
-
             'exp' => $now + $this->accessLifetime,
-
             'type' => 'access',
         ];
 
@@ -76,96 +94,168 @@ class JwtService
         );
     }
 
+    public function createRefreshToken(User $user): string
+{
+    $now = now()->timestamp;
+
+    $payload = [
+        'iss' => $this->issuer,
+        'sub' => (string) $user->user_id,
+        'jti' => (string) Str::uuid(),
+        'iat' => $now,
+        'nbf' => $now,
+        'exp' => $now + $this->refreshLifetime,
+        'type' => 'refresh',
+    ];
+
+    return JWT::encode(
+        $payload,
+        $this->secret,
+        $this->algorithm
+    );
+}
+
+
     /**
      * Decode and validate access JWT.
      */
-    public function decode(string $token): ?array
-    {
-        try {
-            $payload = JWT::decode(
-                $token,
-                new Key(
-                    $this->secret,
-                    $this->algorithm
-                )
-            );
+    
 
-            /*
-             * firebase/php-jwt returns stdClass.
-             *
-             * Convert it to an array so the rest
-             * of the application can use:
-             *
-             * $payload['sub']
-             * $payload['jti']
-             * $payload['exp']
-             */
-            $data = (array) $payload;
 
-            /*
-             * Validate issuer.
-             */
-            if (
-                ($data['iss'] ?? null)
-                !== $this->issuer
-            ) {
-                return null;
-            }
+    private function decodeToken(
+    string $token,
+    string $expectedType
+): ?array {
+    $token = trim($token);
 
-            /*
-             * Only access tokens are accepted.
-             */
-            if (
-                ($data['type'] ?? null)
-                !== 'access'
-            ) {
-                return null;
-            }
+    if ($token === '') {
+        return null;
+    }
 
-            /*
-             * JTI is required.
-             */
-            if (
-                empty($data['jti'])
-            ) {
-                return null;
-            }
+    try {
+        $payload = JWT::decode(
+            $token,
+            new Key(
+                $this->secret,
+                $this->algorithm
+            )
+        );
 
-            /*
-             * Subject/user ID is required.
-             */
-            if (
-                empty($data['sub'])
-            ) {
-                return null;
-            }
+        $data = (array) $payload;
 
-            return $data;
+        /*
+        |--------------------------------------------------------------------------
+        | Issuer
+        |--------------------------------------------------------------------------
+        */
 
-        } catch (Throwable) {
+        if (
+            !isset($data['iss']) ||
+            !is_string($data['iss']) ||
+            !hash_equals(
+                $this->issuer,
+                $data['iss']
+            )
+        ) {
             return null;
         }
-    }
 
-    /**
-     * Validate access JWT.
-     */
-    public function validate(string $token): bool
-    {
-        return $this->decode($token) !== null;
-    }
+        /*
+        |--------------------------------------------------------------------------
+        | Token type
+        |--------------------------------------------------------------------------
+        */
 
-    /**
-     * Get JWT payload.
-     */
-    public function payload(string $token): ?array
-    {
-        return $this->decode($token);
-    }
+        if (
+            ($data['type'] ?? null)
+            !== $expectedType
+        ) {
+            return null;
+        }
 
-    /**
-     * Get remaining lifetime.
-     */
+        /*
+        |--------------------------------------------------------------------------
+        | Subject
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            !isset($data['sub']) ||
+            !is_string($data['sub']) ||
+            $data['sub'] === ''
+        ) {
+            return null;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | JTI
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            !isset($data['jti']) ||
+            !is_string($data['jti']) ||
+            !Str::isUuid($data['jti'])
+        ) {
+            return null;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Standard claims
+        |--------------------------------------------------------------------------
+        */
+
+        foreach ([
+            'iat',
+            'nbf',
+            'exp',
+        ] as $claim) {
+            if (
+                !isset($data[$claim]) ||
+                !is_numeric($data[$claim])
+            ) {
+                return null;
+            }
+        }
+
+        return $data;
+
+    } catch (Throwable) {
+        return null;
+    }
+}
+
+
+public function decode(string $token): ?array
+{
+    return $this->decodeToken(
+        $token,
+        'access'
+    );
+}
+
+public function decodeRefreshToken(
+    string $token
+): ?array {
+    return $this->decodeToken(
+        $token,
+        'refresh'
+    );
+}
+
+public function validate(string $token): bool
+{
+    return $this->decode($token) !== null;
+}
+
+public function payload(string $token): ?array
+{
+    return $this->decode($token);
+}
+
+
     public function remainingSeconds(
         string $token
     ): ?int {

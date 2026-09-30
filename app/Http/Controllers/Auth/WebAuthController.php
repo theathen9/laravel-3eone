@@ -31,7 +31,7 @@ class WebAuthController extends Controller
      * - API access token
      * - API refresh token
      */
-   public function login(Request $request)
+    public function login(Request $request)
 {
     $validated = $request->validate([
         'username' => [
@@ -39,7 +39,6 @@ class WebAuthController extends Controller
             'string',
             'max:100',
         ],
-
         'password' => [
             'required',
             'string',
@@ -78,10 +77,32 @@ class WebAuthController extends Controller
     );
 
     /*
-     * Basic frontend display data.
+     * JWT expiration returned by AuthService.
      *
-     * DO NOT put passwords, tokens, or sensitive
-     * information into this cookie.
+     * This is already calculated from:
+     *
+     * $accessPayload['exp']
+     */
+    $accessTokenTtl = max(
+        1,
+        (int) ceil(
+            $tokens['expires_in'] / 60
+        )
+    );
+
+    $refreshTokenTtl = max(
+        1,
+        (int) ceil(
+            $tokens['refresh_expires_in'] / 60
+        )
+    );
+
+    /*
+     * Frontend display data.
+     *
+     * No password.
+     * No JWT.
+     * No refresh token.
      */
     $cUser = [
         'id' => $user->user_id,
@@ -92,10 +113,11 @@ class WebAuthController extends Controller
     /*
      * Determine dashboard.
      */
-    $response = match (strtolower(
-        $user->role->role_name
-    )) {
-
+    $response = match (
+        strtolower(
+            $user->role->role_name
+        )
+    ) {
         'admin' =>
             redirect()->route('admin.dashboard'),
 
@@ -112,29 +134,23 @@ class WebAuthController extends Controller
             abort(403, 'Invalid user role.'),
     };
 
-    /*
-     * JWT:
-     * 15 minutes
-     *
-     * Refresh:
-     * 1 day
-     *
-     * c_user:
-     * 1 day
-     */
+    $secure = app()->environment('production');
+
     return $response
 
         /*
-         * JWT access token.
+         * Access token
+         *
+         * HttpOnly = true
          */
         ->withCookie(
             cookie(
                 'access-token',
                 $tokens['access_token'],
-                15,
+                $accessTokenTtl,
                 '/',
                 null,
-                app()->environment('production'),
+                $secure,
                 true,
                 false,
                 'Lax'
@@ -142,16 +158,18 @@ class WebAuthController extends Controller
         )
 
         /*
-         * Refresh token.
+         * Refresh token
+         *
+         * HttpOnly = true
          */
         ->withCookie(
             cookie(
                 'refresh-token',
                 $tokens['refresh_token'],
-                60 * 24,
+                $refreshTokenTtl,
                 '/',
                 null,
-                app()->environment('production'),
+                $secure,
                 true,
                 false,
                 'Lax'
@@ -159,24 +177,45 @@ class WebAuthController extends Controller
         )
 
         /*
+         * Device ID
+         *
+         * HttpOnly = true
+         */
+        // ->withCookie(
+        //     cookie(
+        //         'device_id',
+        //         $tokens['device_id'],
+        //         60 * 24 * 365,
+        //         '/',
+        //         null,
+        //         $secure,
+        //         true,
+        //         false,
+        //         'Lax'
+        //     )
+        // )
+
+        /*
          * Frontend user information.
          *
          * HttpOnly = false
+         * because JavaScript may need it.
          */
         ->withCookie(
             cookie(
                 'c_user',
                 json_encode($cUser),
-                60 * 24,
+                $accessTokenTtl,
                 '/',
                 null,
-                app()->environment('production'),
+                $secure,
                 false,
                 false,
                 'Lax'
             )
         );
 }
+
 
     /**
      * Show forgot-password page.

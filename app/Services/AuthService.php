@@ -9,12 +9,16 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use App\Services\JwtService;
+use RuntimeException;
+use DateTime;
 
 class AuthService
 {
     public function __construct(
         private JwtService $jwtService
-    ) {}
+    ) {
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -31,10 +35,11 @@ class AuthService
         $user = User::query()
             ->with('role')
             ->where(function ($query) use ($login) {
+
                 $query->where('username', $login)
                     ->orWhere('email', $login);
 
-                if (filter_var($login, FILTER_VALIDATE_INT)) {
+                if (filter_var($login, FILTER_VALIDATE_INT) !== false) {
                     $query->orWhere(
                         'user_id',
                         (int) $login
@@ -47,32 +52,24 @@ class AuthService
             return null;
         }
 
-        /*
-         * Disabled users cannot login.
-         */
+        // Disabled user
         if (!$user->status) {
             return null;
         }
 
-        /*
-         * Verify password.
-         */
-        if (!Hash::check(
-            $password,
-            $user->password
-        )) {
+        // Password verification
+        if (!Hash::check($password, $user->password)) {
             return null;
         }
 
-        /*
-         * Update last login.
-         */
+        // Update last login
         $user->update([
             'last_login' => now(),
         ]);
 
         return $user;
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -86,22 +83,21 @@ class AuthService
     ): void {
         Auth::login($user);
 
+        // $token = refreshTokens();
+
         $request->session()->regenerate();
 
-        session([
+        $request->session()->put([
             'loggedin' => true,
-
             'user_id' => $user->user_id,
-
             'role' => strtolower(
-                $user->role->role_name
+                trim($user->role?->role_name ?? '')
             ),
-
             'reference_id' => $user->reference_id,
-
             'reference_type' => $user->reference_type,
         ]);
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -112,20 +108,16 @@ class AuthService
     private function getDeviceId(
         Request $request
     ): string {
-        /*
-         * Browser sends existing device ID.
-         */
+
         $deviceId = $request->cookie('device_id');
 
-        /*
-         * First login from this browser.
-         */
         if (!$deviceId) {
             $deviceId = (string) Str::uuid();
         }
-
+        
         return $deviceId;
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -136,185 +128,222 @@ class AuthService
     private function getDeviceInfo(
         Request $request
     ): string {
-        $userAgent = $request->userAgent() ?? '';
 
-        if (str_contains(
-            strtolower($userAgent),
-            'android'
-        )) {
+        $userAgent = strtolower(
+            $request->userAgent() ?? ''
+        );
+
+        if (str_contains($userAgent, 'android')) {
             return 'Android';
         }
 
         if (
-            str_contains(
-                strtolower($userAgent),
-                'iphone'
-            )
-            ||
-            str_contains(
-                strtolower($userAgent),
-                'ipad'
-            )
+            str_contains($userAgent, 'iphone') ||
+            str_contains($userAgent, 'ipad')
         ) {
             return 'iOS';
         }
 
-        if (str_contains(
-            strtolower($userAgent),
-            'windows'
-        )) {
-            if (str_contains(
-                strtolower($userAgent),
-                'edg'
-            )) {
+        if (str_contains($userAgent, 'windows')) {
+
+            if (str_contains($userAgent, 'edg')) {
                 return 'Windows / Edge';
             }
 
-            if (str_contains(
-                strtolower($userAgent),
-                'chrome'
-            )) {
+            if (str_contains($userAgent, 'chrome')) {
                 return 'Windows / Chrome';
             }
 
-            if (str_contains(
-                strtolower($userAgent),
-                'firefox'
-            )) {
+            if (str_contains($userAgent, 'firefox')) {
                 return 'Windows / Firefox';
             }
 
             return 'Windows';
         }
 
-        if (str_contains(
-            strtolower($userAgent),
-            'macintosh'
-        )) {
+        if (str_contains($userAgent, 'macintosh')) {
             return 'macOS';
         }
 
-        if (str_contains(
-            strtolower($userAgent),
-            'linux'
-        )) {
+        if (str_contains($userAgent, 'linux')) {
             return 'Linux';
         }
 
         return 'Unknown';
     }
 
+
     /*
     |--------------------------------------------------------------------------
-    | Create JWT + Refresh Token
+    | Create / Replace JWT + Refresh Token
     |--------------------------------------------------------------------------
     */
 
+
     public function createTokens(
-        Request $request,
-        User $user,
-        ?string $deviceId = null
+    Request $request,
+    User $user,
+    ?string $deviceId = null
     ): array {
-        /*
-         * Get existing device ID or create one.
-         */
-        $deviceId ??= $this->getDeviceId($request);
+    $deviceId ??= $this->getDeviceId($request);
 
-        /*
-         * Create JWT access token.
-         */
-        $accessToken = $this->jwtService->createAccessToken(
-            $user
+    /*
+    |--------------------------------------------------------------------------
+    | Create JWTs
+    |--------------------------------------------------------------------------
+    */
+
+    $accessToken = $this->jwtService->createAccessToken($user);
+    $refreshToken = $this->jwtService->createRefreshToken($user);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Access JWT payload
+    |--------------------------------------------------------------------------
+    */
+
+    $accessPayload = $this->jwtService->payload($accessToken);
+
+    if (
+        !$accessPayload ||
+        empty($accessPayload['jti']) ||
+        empty($accessPayload['exp'])
+    ) {
+        throw new RuntimeException(
+            'Unable to create valid access JWT.'
         );
+    }
 
-        /*
-         * Get exact JTI from JWT.
-         */
-        $payload = $this->jwtService->payload(
-            $accessToken
+    $jti = (string) $accessPayload['jti'];
+
+    /*
+    |--------------------------------------------------------------------------
+    | Hash refresh JWT before storing
+    |--------------------------------------------------------------------------
+    */
+
+    $refreshTokenHash = hash(
+        'sha256',
+        $refreshToken
+    );
+    $accessTokenHash = hash(
+        'sha256',
+        $accessToken
+    );
+
+    /*
+    |--------------------------------------------------------------------------
+    | Expiration
+    |--------------------------------------------------------------------------
+    |
+    | Use the actual JWT exp claim for the access token.
+    | Decode the refresh token to obtain its expiration.
+    |
+    */
+
+    $refreshPayload = $this->jwtService->decodeRefreshToken(
+        $refreshToken
+    );
+
+
+    if (
+        !$refreshPayload ||
+        empty($refreshPayload['exp'])
+    ) {
+        throw new RuntimeException(
+            'Unable to create valid refresh JWT.'
         );
+    }
 
-        if (!$payload || empty($payload['jti'])) {
-            throw new \RuntimeException(
-                'Unable to create JWT JTI.'
-            );
-        }
+    $now = new DateTime();
 
-        $jti = (string) $payload['jti'];
 
-        /*
-         * Create secure opaque refresh token.
-         */
-        $refreshToken = bin2hex(
-            random_bytes(64)
-        );
+    $accessExpiry = 
+        (int) $accessPayload['exp']
+    ;
 
-        /*
-         * Token lifetime.
-         */
-        $accessTtl = (int) config(
-            'jwt.access_ttl',
-            900
-        );
+    $refreshExpiry = 
+        (int) $refreshPayload['exp']
+    ;
 
-        $refreshTtl = (int) config(
-            'jwt.refresh_ttl',
-            86400
-        );
+    /*
+    |--------------------------------------------------------------------------
+    | Token data
+    |--------------------------------------------------------------------------
+    */
 
-        $accessExpiry = now()->addSeconds(
-            $accessTtl
-        );
+    $tokenData = [
+        'jti' => $jti,
 
-        $refreshExpiry = now()->addSeconds(
-            $refreshTtl
-        );
+        'access_token' => $accessTokenHash,
+        'access_expiry' => $accessExpiry,
 
-        /*
-         * Store token session.
-         *
-         * IMPORTANT:
-         * We do NOT store the raw access JWT.
-         */
+        'refresh_token' => $refreshTokenHash,
+        'refresh_expiry' => $refreshExpiry,
+
+        'device_info' => $this->getDeviceInfo($request),
+
+        'user_agent' => $request->userAgent(),
+
+        'ip_address' => $request->ip(),
+
+        'revoked_at' => null,
+    ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | Replace existing active session for device
+    |--------------------------------------------------------------------------
+    */
+
+    $deviceInfo = $this->getDeviceInfo($request);
+    $userAgent = $request->userAgent();
+
+    $existingToken = UserToken::query()
+        ->where('user_id', $user->user_id)
+        // ->where('device_id', $deviceId)
+        ->where('user_agent', $userAgent)
+        // ->whereNull('revoked_at')
+        ->first();
+
+    if ($existingToken) {
+        $existingToken->update($tokenData);
+    } else {
         UserToken::create([
             'user_id' => $user->user_id,
-
             'device_id' => $deviceId,
-
-            'jti' => $jti,
-
-            'access_expiry' => $accessExpiry,
-
-            'refresh_token' => hash(
-                'sha256',
-                $refreshToken
-            ),
-
-            'refresh_expiry' => $refreshExpiry,
-
-            'device_info' => $this->getDeviceInfo(
-                $request
-            ),
-
-            'user_agent' => $request->userAgent(),
-
-            'ip_address' => $request->ip(),
+            ...$tokenData,
         ]);
-
-        return [
-            'access_token' => $accessToken,
-
-            'refresh_token' => $refreshToken,
-
-            'device_id' => $deviceId,
-
-            'token_type' => 'Bearer',
-
-            'expires_in' => $accessTtl,
-
-            'refresh_expires_in' => $refreshTtl,
-        ];
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Return tokens
+    |--------------------------------------------------------------------------
+    */
+
+    return [
+        'access_token' => $accessToken,
+        'refresh_token' => $refreshToken,
+        'device_id' => $deviceId,
+        'token_type' => 'Bearer',
+
+        'expires_in' => max(
+            0,
+            (int) $accessPayload['exp']
+            - now()->timestamp
+        ),
+
+        'refresh_expires_in' => max(
+            0,
+            (int) $refreshPayload['exp']
+            - now()->timestamp
+        ),
+    ];
+}
+
+
+
 
     /*
     |--------------------------------------------------------------------------
@@ -325,10 +354,12 @@ class AuthService
     public function getTokenPayload(
         string $accessToken
     ): ?array {
+
         return $this->jwtService->payload(
             $accessToken
         );
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -340,30 +371,36 @@ class AuthService
         Request $request,
         string $refreshToken
     ): ?array {
-        $refreshToken = trim($refreshToken);
 
-        if ($refreshToken === '') {
-            return null;
-        }
+        $refreshToken = trim(
+            $refreshToken
+        );
 
-        /*
-         * Hash incoming refresh token.
-         */
         $refreshTokenHash = hash(
             'sha256',
             $refreshToken
         );
 
+        if ($refreshToken === '') {
+            return null;
+        }
+        if ($refreshTokenHash === '') {
+            return null;
+        }
+
+
         /*
-         * Find active refresh token.
-         */
+        |--------------------------------------------------------------------------
+        | Find active refresh token
+        |--------------------------------------------------------------------------
+        */
+
         $token = UserToken::query()
             ->with('user.role')
             ->where(
                 'refresh_token',
                 $refreshTokenHash
             )
-            ->whereNull('revoked_at')
             ->where(
                 'refresh_expiry',
                 '>',
@@ -371,27 +408,43 @@ class AuthService
             )
             ->first();
 
+
         if (!$token) {
             return null;
         }
 
-        $user = $token->user;
 
         /*
-         * User no longer exists or is disabled.
-         */
-        if (!$user || !$user->status) {
+        |--------------------------------------------------------------------------
+        | Load user
+        |--------------------------------------------------------------------------
+        */
+
+        $user = $token->user;
+
+        if (
+            !$user ||
+            !$user->status
+        ) {
             return null;
         }
 
-        /*
-         * Preserve original device ID.
-         */
-        $deviceId = $token->device_id;
 
         /*
-         * Refresh token rotation.
-         */
+        |--------------------------------------------------------------------------
+        | Preserve device
+        |--------------------------------------------------------------------------
+        */
+
+        $deviceId = $token->device_id;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Rotate refresh token atomically
+        |--------------------------------------------------------------------------
+        */
+
         return DB::transaction(
             function () use (
                 $request,
@@ -399,16 +452,65 @@ class AuthService
                 $user,
                 $deviceId
             ) {
+
                 /*
-                 * Revoke old token pair.
-                 */
-                $token->update([
+                |--------------------------------------------------------------------------
+                | Lock token row
+                |--------------------------------------------------------------------------
+                |
+                | Prevent two simultaneous refresh requests from
+                | using the same refresh token.
+                |
+                */
+
+               $lockedToken = UserToken::query()
+    ->where('token_id', $token->token_id)
+    ->lockForUpdate()
+    ->first();
+
+if (!$lockedToken) {
+    return null;
+}
+
+if ($lockedToken->revoked_at !== null) {
+    return null;
+}
+
+if (
+    !hash_equals(
+        (string) $lockedToken->refresh_token,
+        $refreshTokenHash
+    )
+) {
+    return null;
+}
+
+if (
+    !$lockedToken->refresh_expiry ||
+    now()->greaterThanOrEqualTo($lockedToken->refresh_expiry)
+) {
+    return null;
+}
+
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Revoke old token pair
+                |--------------------------------------------------------------------------
+                */
+
+                $lockedToken->update([
                     'revoked_at' => now(),
                 ]);
 
+
                 /*
-                 * Create new JWT + refresh token.
-                 */
+                |--------------------------------------------------------------------------
+                | Create new token pair
+                |--------------------------------------------------------------------------
+                */
+
                 return $this->createTokens(
                     $request,
                     $user,
@@ -418,51 +520,163 @@ class AuthService
         );
     }
 
+
     /*
     |--------------------------------------------------------------------------
     | API Logout / Revoke JWT
     |--------------------------------------------------------------------------
     */
 
+    // public function logout(
+    //     string $accessToken
+    // ): void {
+
+    //     $accessToken = trim(
+    //         $accessToken
+    //     );
+
+    //     if ($accessToken === '') {
+    //         return;
+    //     }
+
+
+    //     /*
+    //     |--------------------------------------------------------------------------
+    //     | Decode JWT
+    //     |--------------------------------------------------------------------------
+    //     */
+
+    //     $payload = $this->jwtService->payload(
+    //         $accessToken
+    //     );
+
+
+    //     if (!$payload) {
+    //         return;
+    //     }
+
+
+    //     /*
+    //     |--------------------------------------------------------------------------
+    //     | Get JTI
+    //     |--------------------------------------------------------------------------
+    //     */
+
+    //     $jti = $payload['jti'] ?? null;
+
+    //     if (!$jti) {
+    //         return;
+    //     }
+
+
+    //     /*
+    //     |--------------------------------------------------------------------------
+    //     | Revoke token session
+    //     |--------------------------------------------------------------------------
+    //     */
+
+    //     UserToken::query()
+    //         ->where('jti', $jti)
+    //         ->whereNull('revoked_at')
+    //         ->update([
+    //             'revoked_at' => now(),
+    //         ]);
+    // }
+
     public function logout(
-        string $accessToken
-    ): void {
-        $accessToken = trim($accessToken);
+    string $accessToken
+): void {
 
-        if ($accessToken === '') {
-            return;
-        }
+    $accessToken = trim($accessToken);
 
-        /*
-         * Decode and verify JWT.
-         */
-        $payload = $this->jwtService->payload(
-            $accessToken
-        );
-
-        if (!$payload) {
-            return;
-        }
-
-        /*
-         * Get JWT ID.
-         */
-        $jti = $payload['jti'] ?? null;
-
-        if (!$jti) {
-            return;
-        }
-
-        /*
-         * Revoke token session.
-         */
-        UserToken::query()
-            ->where('jti', $jti)
-            ->whereNull('revoked_at')
-            ->update([
-                'revoked_at' => now(),
-            ]);
+    if ($accessToken === '') {
+        return;
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Decode JWT
+    |--------------------------------------------------------------------------
+    */
+
+    $payload = $this->jwtService->payload(
+        $accessToken
+    );
+
+    /*
+    |--------------------------------------------------------------------------
+    | DEBUG TIMEZONE / JWT
+    |--------------------------------------------------------------------------
+    */
+
+    dd([
+        'php_time' => time(),
+
+        'php_utc' => gmdate(
+            'Y-m-d H:i:s.u',
+            time()
+        ),
+
+        'php_local' => now()->format(
+            'Y-m-d H:i:s.uP'
+        ),
+
+        'app_timezone' => config('app.timezone'),
+
+        'iat' => $payload['iat'] ?? null,
+
+        'iat_utc' => isset($payload['iat'])
+            ? gmdate(
+                'Y-m-d H:i:s.u',
+                (int) $payload['iat']
+            )
+            : null,
+
+        'exp' => $payload['exp'] ?? null,
+
+        'exp_utc' => isset($payload['exp'])
+            ? gmdate(
+                'Y-m-d H:i:s.u',
+                (int) $payload['exp']
+            )
+            : null,
+
+        'ttl' => isset(
+            $payload['iat'],
+            $payload['exp']
+        )
+            ? (
+                (int) $payload['exp']
+                - (int) $payload['iat']
+            )
+            : null,
+    ]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Normal logout continues after debugging
+    |--------------------------------------------------------------------------
+    */
+
+    if (!$payload) {
+        return;
+    }
+
+    $jti = $payload['jti'] ?? null;
+
+    if (!$jti) {
+        return;
+    }
+
+    UserToken::query()
+        ->where('jti', $jti)
+        ->whereNull('revoked_at')
+        ->update([
+            'revoked_at' => now(),
+        ]);
+}
+
+
 
     /*
     |--------------------------------------------------------------------------
@@ -473,6 +687,7 @@ class AuthService
     public function logoutWeb(
         Request $request
     ): void {
+
         Auth::logout();
 
         $request->session()->invalidate();

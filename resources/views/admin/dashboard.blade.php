@@ -45,6 +45,17 @@
                 </div>
             </div>
 
+            <div class="mt-4">
+            <form method="POST" action="{{ route('auth.logout') }}">
+                @csrf
+
+                <button type="submit" class="btn btn-danger">
+                    Logout
+                </button>
+            </form>
+        </div>
+
+
         </div>
 
     </div>

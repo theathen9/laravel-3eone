@@ -26,7 +26,7 @@ class DatabaseSeeder extends Seeder
             [
                 'reference_id' => 1,
                 'reference_type' => 'Employee',
-                'email' => 'admin@example.com',
+                'email' => 'admin@gmail.com',
                 'password' => Hash::make('Admin@12345'),
                 'role_id' => $adminRole->role_id,
                 'status' => true,

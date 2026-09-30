@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 use App\Http\Middleware\ApiAuth;
 use App\Http\Middleware\RoleMiddleware;
+use App\Http\Middleware\WebTokenAuth;
 
 return Application::configure(
     basePath: dirname(__DIR__)
@@ -22,39 +23,27 @@ return Application::configure(
         Middleware $middleware
     ): void {
 
+        /*
+        |--------------------------------------------------------------------------
+        | Guest redirect
+        |--------------------------------------------------------------------------
+        */
 
         $middleware->redirectGuestsTo(
             fn () => route('auth.signin')
         );
 
+
         /*
         |--------------------------------------------------------------------------
         | Cookie Encryption
         |--------------------------------------------------------------------------
-        |
-        | JWT access and refresh tokens are already protected
-        | by HTTPS + HttpOnly cookies.
-        |
-        | We need the raw JWT value so ApiAuth middleware can
-        | read:
-        |
-        |     $request->cookie('access-token')
-        |
         */
+
         $middleware->encryptCookies(except: [
             'access-token',
             'refresh-token',
         ]);
-
-
-        
-        $middleware->trustProxies(
-        at: '*',
-        headers: Request::HEADER_X_FORWARDED_FOR
-            | Request::HEADER_X_FORWARDED_HOST
-            | Request::HEADER_X_FORWARDED_PORT
-            | Request::HEADER_X_FORWARDED_PROTO
-    );
 
 
         /*
@@ -65,19 +54,33 @@ return Application::configure(
 
         $middleware->alias([
             'role' => RoleMiddleware::class,
+
             'api.auth' => ApiAuth::class,
+
+            'web.token' => WebTokenAuth::class,
+            
         ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Trust Proxies
+        |--------------------------------------------------------------------------
+        */
+
+        $middleware->trustProxies(
+            at: '*',
+            headers:
+                Request::HEADER_X_FORWARDED_FOR
+                | Request::HEADER_X_FORWARDED_HOST
+                | Request::HEADER_X_FORWARDED_PORT
+                | Request::HEADER_X_FORWARDED_PROTO
+        );
     })
 
     ->withExceptions(function (
         Exceptions $exceptions
     ): void {
-
-        /*
-        |--------------------------------------------------------------------------
-        | API Exceptions
-        |--------------------------------------------------------------------------
-        */
 
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) =>

@@ -12,7 +12,7 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    protected $table = 'tblusers';
+    protected $table = 'tblUsers';
 
     protected $primaryKey = 'user_id';
 

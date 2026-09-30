@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Role extends Model
 {
-    protected $table = 'tblroles';
+    protected $table = 'tblRoles';
 
     protected $primaryKey = 'role_id';
 

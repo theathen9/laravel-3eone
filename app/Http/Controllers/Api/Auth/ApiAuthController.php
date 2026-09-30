@@ -65,18 +65,21 @@ class ApiAuthController extends Controller
     /**
      * Refresh access token
      */
+
     public function refresh(Request $request)
 {
-    $validated = $request->validate([
-        'refresh_token' => [
-            'required',
-            'string',
-        ],
-    ]);
+    $refreshToken = $request->cookie('refresh-token');
+
+    if (!$refreshToken) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Refresh token is missing.',
+        ], 401);
+    }
 
     $tokens = $this->authService->refreshTokens(
         $request,
-        $validated['refresh_token']
+        $refreshToken
     );
 
     if (!$tokens) {
@@ -114,250 +117,6 @@ class ApiAuthController extends Controller
             'message' => 'Logout successful.',
         ]);
     }
-
-    /**
-     * Get current authenticated JWT information.
-     */
-//     public function token(Request $request)
-// {
-//     $accessToken = $request->bearerToken();
-
-//     if (!$accessToken) {
-//         return response()->json([
-//             'success' => false,
-//             'message' => 'Access token is required.',
-//         ], 401);
-//     }
-
-//     $payload = $this->authService->getTokenPayload(
-//         $accessToken
-//     );
-
-//     if (!$payload) {
-//         return response()->json([
-//             'success' => false,
-//             'message' => 'Invalid or expired access token.',
-//         ], 401);
-//     }
-
-//     $user = $request->user();
-
-//     if (!$user) {
-//         return response()->json([
-//             'success' => false,
-//             'message' => 'Unauthenticated.',
-//         ], 401);
-//     }
-
-//     $now = now()->timestamp;
-
-//     $issuedAt = isset($payload['iat'])
-//         ? (int) $payload['iat']
-//         : null;
-
-//     $expiresAt = isset($payload['exp'])
-//         ? (int) $payload['exp']
-//         : null;
-
-//     $remainingSeconds = $expiresAt
-//         ? max(0, $expiresAt - $now)
-//         : null;
-
-//     return response()->json([
-//         'success' => true,
-
-//         'message' => 'Token is valid.',
-
-//         'token' => [
-//             'type' => 'Bearer',
-
-//             'valid' => true,
-
-//             'algorithm' => 'HS256',
-
-//             'issuer' => $payload['iss'] ?? null,
-
-//             'type_claim' => $payload['type'] ?? null,
-
-//             'jti' => $payload['jti'] ?? null,
-
-//             'subject' => $payload['sub'] ?? null,
-
-//             'issued_at' => $issuedAt
-//                 ? date(
-//                     'Y-m-d H:i:s',
-//                     $issuedAt
-//                 )
-//                 : null,
-
-//             'expires_at' => $expiresAt
-//                 ? date(
-//                     'Y-m-d H:i:s',
-//                     $expiresAt
-//                 )
-//                 : null,
-
-//             'remaining_seconds' =>
-//                 $remainingSeconds,
-
-//             'remaining_minutes' =>
-//                 $remainingSeconds !== null
-//                     ? (int) ceil(
-//                         $remainingSeconds / 60
-//                     )
-//                     : null,
-//         ],
-
-//         'user' => [
-//             'id' => $user->user_id,
-
-//             'username' => $user->username,
-
-//             'email' => $user->email,
-
-//             'role' => $user->role->role_name,
-//         ],
-//     ]);
-// }
-
-/**
- * Get current authenticated JWT information.
- */
-// public function token(Request $request)
-// {
-//     /*
-//      * ApiAuth middleware already:
-//      *
-//      * 1. Gets Bearer token OR cookie
-//      * 2. Validates JWT
-//      * 3. Checks JTI
-//      * 4. Checks database token
-//      * 5. Checks user
-//      *
-//      * Therefore we get the validated JWT from
-//      * the request attributes.
-//      */
-//     $accessToken = $request->attributes->get('accessToken');
-
-//     /*
-//      * Safety check.
-//      */
-//     if (!$accessToken) {
-//         return response()->json([
-//             'success' => false,
-//             'message' => 'Access token is required.',
-//         ], 401);
-//     }
-
-//     /*
-//      * Get validated JWT payload.
-//      */
-//     $payload = $request->attributes->get('jwt');
-
-//     if (!$payload) {
-//         $payload = $this->authService->getTokenPayload(
-//             $accessToken
-//         );
-//     }
-
-//     if (!$payload) {
-//         return response()->json([
-//             'success' => false,
-//             'message' => 'Invalid or expired access token.',
-//         ], 401);
-//     }
-
-//     /*
-//      * Authenticated user was also set
-//      * by ApiAuth middleware.
-//      */
-//     $user = $request->user();
-
-//     if (!$user) {
-//         return response()->json([
-//             'success' => false,
-//             'message' => 'Unauthenticated.',
-//         ], 401);
-//     }
-
-//     /*
-//      * Token timestamps.
-//      */
-//     $now = now()->timestamp;
-
-//     $issuedAt = isset($payload['iat'])
-//         ? (int) $payload['iat']
-//         : null;
-
-//     $expiresAt = isset($payload['exp'])
-//         ? (int) $payload['exp']
-//         : null;
-
-//     $remainingSeconds = $expiresAt !== null
-//         ? max(0, $expiresAt - $now)
-//         : null;
-
-//     /*
-//      * Return token information.
-//      */
-//     return response()->json([
-//         'success' => true,
-
-//         'message' => 'Token is valid.',
-
-//         'token' => [
-//             'type' => 'Bearer',
-
-//             'valid' => true,
-
-//             'algorithm' => config(
-//                 'jwt.algorithm',
-//                 'HS256'
-//             ),
-
-//             'issuer' => $payload['iss'] ?? null,
-
-//             'type_claim' => $payload['type'] ?? null,
-
-//             'jti' => $payload['jti'] ?? null,
-
-//             'subject' => $payload['sub'] ?? null,
-
-//             'issued_at' => $issuedAt
-//                 ? date(
-//                     'Y-m-d H:i:s',
-//                     $issuedAt
-//                 )
-//                 : null,
-
-//             'expires_at' => $expiresAt
-//                 ? date(
-//                     'Y-m-d H:i:s',
-//                     $expiresAt
-//                 )
-//                 : null,
-
-//             'remaining_seconds' => $remainingSeconds,
-
-//             'remaining_minutes' =>
-//                 $remainingSeconds !== null
-//                     ? (int) ceil(
-//                         $remainingSeconds / 60
-//                     )
-//                     : null,
-//         ],
-
-//         'user' => [
-//             'id' => $user->user_id,
-
-//             'username' => $user->username,
-
-//             'email' => $user->email,
-
-//             'role' => $user->role->role_name,
-//         ],
-//     ]);
-// }
 
 
 public function token(Request $request)

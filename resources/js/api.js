@@ -16,7 +16,8 @@ async function refreshToken() {
 
     refreshPromise = (async () => {
         try {
-            const APP_API_URL = import.meta.env.VITE_APP_API_URL;
+                const APP_API_URL = import.meta.env.VITE_APP_API_URL || "/api";
+
             const response = await fetch(`${APP_API_URL}/v1/auth/refresh`, {
                 method: "POST",
                 credentials: "include",

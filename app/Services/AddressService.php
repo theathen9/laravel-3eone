@@ -11,7 +11,7 @@ class AddressService
 
     public function __construct()
     {
-        $path = storage_path('app/data/addressCambodia.json');
+        $path = resource_path('data/addressCambodia.json');
 
         if (!File::exists($path)) {
             throw new RuntimeException(

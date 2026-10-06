@@ -18,7 +18,7 @@ export function setupAddressAPI(prefix) {
     // --------------------------------------------------------
     // API URL
     // --------------------------------------------------------
-    const APP_API_URL = import.meta.env.VITE_APP_API_URL;
+    const APP_API_URL = import.meta.env.VITE_APP_API_URL || "/api";
 
     console.log("Address API:", APP_API_URL);
     console.log("Address prefix:", prefix);

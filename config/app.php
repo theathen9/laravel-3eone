@@ -53,6 +53,7 @@ return [
     */
 
     'url' => env('APP_URL', 'http://localhost'),
+    'api_url' => env('VITE_APP_API_URL', '/api'),
 
     /*
     |--------------------------------------------------------------------------

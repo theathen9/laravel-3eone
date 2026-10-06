@@ -1,7 +1,11 @@
 <?php
 
 use App\Http\Controllers\Account\DashboardController as AccountDashboardController;
-use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+// use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\Registration\StudentRegistrationController;
+use App\Http\Controllers\Admin\Registration\EmployeeRegistrationController;
+
 use App\Http\Controllers\Auth\WebAuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -54,10 +58,10 @@ Route::prefix('auth')
 |--------------------------------------------------------------------------
 */
 
-Route::post('/auth/logout', [
+Route::post('/auth/signout', [
     WebAuthController::class,
     'logout',
-])->name('auth.logout');
+])->name('auth.signout');
 
 /*
 |--------------------------------------------------------------------------
@@ -81,7 +85,6 @@ Route::get('/', function (Request $request) {
 
         default => abort(403),
     };
-
 })->middleware('auth')->name('home');
 
 /*
@@ -89,7 +92,6 @@ Route::get('/', function (Request $request) {
 | Admin
 |--------------------------------------------------------------------------
 */
-
 Route::middleware([
     'auth',
     'role:admin',
@@ -99,10 +101,26 @@ Route::middleware([
     ->group(function () {
 
         Route::get('/dashboard', [
-            AdminDashboardController::class,
-            'index',
+            AdminController::class,
+            'dashboard',
         ])->name('dashboard');
+
+        Route::get('/registrations/students', [
+            StudentRegistrationController::class,
+            'index',
+        ])->name('registrations.students.index');
+
+        Route::get('/registrations/employees', [
+            EmployeeRegistrationController::class,
+            'index',
+        ])->name('registrations.employees.index');
+
+        Route::post('/registrations/employees', [
+            EmployeeRegistrationController::class,
+            'store',
+        ])->name('registrations.employees.store');
     });
+
 
 /*
 |--------------------------------------------------------------------------

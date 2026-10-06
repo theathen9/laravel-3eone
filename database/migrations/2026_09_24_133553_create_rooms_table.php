@@ -15,8 +15,8 @@ return new class extends Migration
 
             $table->integer('capacity');
 
-            $table->string('status', 50)
-                ->default('Active');
+            $table->smallInteger('status')->default(1);
+
         });
     }
 

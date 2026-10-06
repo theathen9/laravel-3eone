@@ -26,6 +26,8 @@
     "$schema": "https://www.schemastore.org/package.json",
     "dependencies": {
         "@vercel/analytics": "^2.0.1",
-        "@vercel/speed-insights": "^2.0.0"
+        "@vercel/speed-insights": "^2.0.0",
+        "alpinejs": "^3.17.4",
+        "bootstrap": "^5.3.8"
     }
 }

@@ -87,14 +87,14 @@ class WebAuthController extends Controller
         $accessTokenTtl = max(
             1,
             (int) ceil(
-                $tokens['expires_in'] / 60
+                $tokens['expires_in']
             )
         );
 
         $refreshTokenTtl = max(
             1,
             (int) ceil(
-                $tokens['refresh_expires_in'] / 60
+                $tokens['refresh_expires_in']
             )
         );
 
@@ -114,11 +114,9 @@ class WebAuthController extends Controller
         /*
          * Determine dashboard.
          */
-        $response = match (
-            strtolower(
-                $user->role->role_name
-            )
-        ) {
+        $response = match (strtolower(
+            $user->role->role_name
+        )) {
             'admin' => redirect()->route('admin.dashboard'),
 
             'accountant' => redirect()->route('account.dashboard'),
@@ -201,7 +199,7 @@ class WebAuthController extends Controller
                 cookie(
                     'c_user',
                     json_encode($cUser),
-                    $accessTokenTtl,
+                    $refreshTokenTtl,
                     '/',
                     null,
                     $secure,
@@ -398,13 +396,13 @@ class WebAuthController extends Controller
         /*
          * Revoke API token if available.
          */
-        $accessToken = $request->cookie(
-            'access-token'
+        $refreshToken = $request->cookie(
+            'refresh-token'
         );
 
-        if ($accessToken) {
+        if ($refreshToken) {
             $this->authService->logout(
-                $accessToken
+                $refreshToken
             );
         }
 

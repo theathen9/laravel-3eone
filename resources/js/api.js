@@ -1,6 +1,6 @@
 // resources/js/api.js
 let refreshPromise = null;
-
+// const APP_API_URL = window.APP_API_URL;
 
 /**
  * Refresh the access token.
@@ -9,7 +9,6 @@ let refreshPromise = null;
  * Other requests wait for the same Promise.
  */
 async function refreshToken() {
-
     // Refresh already running
     if (refreshPromise) {
         return refreshPromise;
@@ -17,11 +16,12 @@ async function refreshToken() {
 
     refreshPromise = (async () => {
         try {
-            const response = await fetch('/api/v1/auth/refresh', {
-                method: 'POST',
-                credentials: 'include',
+            const APP_API_URL = import.meta.env.VITE_APP_API_URL;
+            const response = await fetch(`${APP_API_URL}/v1/auth/refresh`, {
+                method: "POST",
+                credentials: "include",
                 headers: {
-                    'Accept': 'application/json',
+                    Accept: "application/json",
                 },
             });
 
@@ -30,12 +30,10 @@ async function refreshToken() {
             }
 
             return true;
-
         } catch (error) {
-            console.error('Token refresh failed:', error);
+            console.error("Token refresh failed:", error);
 
             return false;
-
         } finally {
             // Allow a future refresh attempt
             refreshPromise = null;
@@ -44,7 +42,6 @@ async function refreshToken() {
 
     return refreshPromise;
 }
-
 
 /**
  * API request wrapper.
@@ -57,24 +54,21 @@ async function refreshToken() {
  * - redirects to login if refresh fails
  */
 export async function apiFetch(url, options = {}) {
-
     const requestOptions = {
         ...options,
-        credentials: 'include',
+        credentials: "include",
 
         headers: {
-            'Accept': 'application/json',
+            Accept: "application/json",
             ...(options.headers || {}),
         },
     };
-
 
     // ---------------------------------------------------------
     // First request
     // ---------------------------------------------------------
 
     let response = await fetch(url, requestOptions);
-
 
     // ---------------------------------------------------------
     // Request succeeded
@@ -84,33 +78,29 @@ export async function apiFetch(url, options = {}) {
         return response;
     }
 
-
     // ---------------------------------------------------------
     // Access token expired
     // ---------------------------------------------------------
 
     const refreshed = await refreshToken();
 
-
-    // ---------------------------------------------------------
-    // Refresh failed
-    // ---------------------------------------------------------
+    // // ---------------------------------------------------------
+    // // Refresh failed
+    // // ---------------------------------------------------------
 
     if (!refreshed) {
-
         // Optional: call logout endpoint if your application
         // needs server-side token revocation.
         //
-        // await fetch('/api/v1/auth/logout', {
-        //     method: 'POST',
-        //     credentials: 'include',
-        // });
+        await fetch("/auth/signout", {
+            method: "POST",
+            credentials: "include",
+        });
 
-        window.location.href = '/auth/signin';
+        window.location.href = "/auth/signin";
 
         return response;
     }
-
 
     // ---------------------------------------------------------
     // Retry original request ONCE

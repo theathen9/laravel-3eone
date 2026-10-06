@@ -75,11 +75,17 @@ class JwtService
     }
 
     /**
-     * Create access JWT.
+     * Create token.
      */
-    public function createAccessToken(User $user): string
+    public function createToken(User $user, string $type = 'access'): string
     {
         $now = now()->timestamp;
+
+        $lifetime = match ($type) {
+            'access' => $this->accessLifetime,
+            'refresh' => $this->refreshLifetime,
+            default => throw new InvalidArgumentException("Invalid token type: {$type}"),
+        };
 
         $payload = [
             'iss' => $this->issuer,
@@ -87,8 +93,8 @@ class JwtService
             'jti' => (string) Str::uuid(),
             'iat' => $now,
             'nbf' => $now,
-            'exp' => $now + $this->accessLifetime,
-            'type' => 'access',
+            'exp' => $now + $lifetime,
+            'type' => $type,
         ];
 
         return JWT::encode(
@@ -98,25 +104,14 @@ class JwtService
         );
     }
 
+    public function createAccessToken(User $user): string
+    {
+        return $this->createToken($user, 'access');
+    }
+
     public function createRefreshToken(User $user): string
     {
-        $now = now()->timestamp;
-
-        $payload = [
-            'iss' => $this->issuer,
-            'sub' => (string) $user->user_id,
-            'jti' => (string) Str::uuid(),
-            'iat' => $now,
-            'nbf' => $now,
-            'exp' => $now + $this->refreshLifetime,
-            'type' => 'refresh',
-        ];
-
-        return JWT::encode(
-            $payload,
-            $this->secret,
-            $this->algorithm
-        );
+        return $this->createToken($user, 'refresh');
     }
 
     /**

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Models\UserToken;
+// use App\Services\JwtService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -31,6 +32,7 @@ class AuthService
 
         $user = User::query()
             ->with('role')
+            ->where('status', 1)
             ->where(function ($query) use ($login) {
 
                 $query->where('username', $login)
@@ -75,7 +77,7 @@ class AuthService
 
     public function loginWeb(
         Request $request,
-        User $user
+        User $user,
     ): void {
 
         // $accessToken = $request->cookie(
@@ -332,13 +334,13 @@ class AuthService
             'expires_in' => max(
                 0,
                 (int) $accessPayload['exp']
-                - now()->timestamp
+                    - now()->timestamp
             ),
 
             'refresh_expires_in' => max(
                 0,
                 (int) $refreshPayload['exp']
-                - now()->timestamp
+                    - now()->timestamp
             ),
         ];
     }
@@ -363,6 +365,156 @@ class AuthService
     | Refresh JWT + Refresh Token
     |--------------------------------------------------------------------------
     */
+
+    public function createAccessToken(
+        Request $request,
+        User $user,
+        ?string $refreshToken = null,
+        ?string $deviceId = null
+    ): array {
+
+        /*--------------------------------------------------------------------------
+        | Device ID
+        |-------------------------------------------------------------------------- */
+
+        $deviceId ??= $this->getDeviceId($request);
+
+        /*--------------------------------------------------------------------------
+        | Create NEW access JWT
+        |-------------------------------------------------------------------------- */
+        $accessToken = $this->jwtService->createAccessToken($user);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Access JWT payload
+        |--------------------------------------------------------------------------
+        */
+
+        $accessPayload = $this->jwtService->payload($accessToken);
+
+        if (
+            ! $accessPayload ||
+            empty($accessPayload['jti']) ||
+            empty($accessPayload['exp'])
+        ) {
+            throw new RuntimeException(
+                'Unable to create valid access JWT.'
+            );
+        }
+        $jti = (string) $accessPayload['jti'];
+        $accessExpiry = (int) $accessPayload['exp'];
+
+        /*
+        |--------------------------------------------------------------------------
+        | Expiration
+        |--------------------------------------------------------------------------
+        |
+        | Use the actual JWT exp claim for the access token.
+        | Decode the refresh token to obtain its expiration.
+        |
+        */
+
+        $refreshPayload = $this->jwtService->decodeRefreshToken(
+            $refreshToken
+        );
+
+        if (
+            ! $refreshPayload ||
+            empty($refreshPayload['exp'])
+        ) {
+            throw new RuntimeException(
+                'Unable to create valid refresh JWT.'
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Hash refresh JWT before storing
+        |--------------------------------------------------------------------------
+        */
+
+        $refreshTokenHash = hash(
+            'sha256',
+            $refreshToken
+        );
+
+        $accessTokenHash = hash(
+            'sha256',
+            $accessToken
+        );
+
+        /* |--------------------------------------------------------------------------
+        | Access token data |
+        | Only access-token information changes here.
+        | refresh_token and refresh_expiry are intentionally NOT changed.
+        |-------------------------------------------------------------------------- */
+
+        $tokenData = [
+            'jti' => $jti,
+
+            'access_token' => $accessTokenHash,
+            'access_expiry' => $accessExpiry,
+
+            'device_info' => $this->getDeviceInfo($request),
+
+            'user_agent' => $request->userAgent(),
+
+            'ip_address' => $request->ip(),
+
+            'revoked_at' => null,
+        ];
+
+        $deviceInfo = $this->getDeviceInfo($request);
+        $userAgent = $request->userAgent();
+
+        /* |--------------------------------------------------------------------------
+        | Find existing token session
+        | Same user + same device = update existing row.
+        |-------------------------------------------------------------------------- */
+
+        $existingToken = UserToken::query()
+            ->where('user_id', $user->user_id)
+            ->where('user_agent', $userAgent)
+            ->where('device_id', $deviceId)
+            // ->where('refresh_token', $refreshTokenHash)
+            // ->whereNull('revoked_at')
+            ->first();
+
+        /* |--------------------------------------------------------------------------
+        | Update existing session
+        |-------------------------------------------------------------------------- */
+        if ($existingToken) {
+            $existingToken->update($tokenData);
+        } else {
+            /* |--------------------------------------------------------------------------
+            | Create new session |
+            | This normally happens during login.
+            | The refresh token should already be created by the login flow.
+            |-------------------------------------------------------------------------- */
+            UserToken::create([
+                'user_id' => $user->user_id,
+                'device_id' => $deviceId,
+                ...$tokenData,
+            ]);
+        }
+
+        return [
+            'access_token' => $accessToken,
+            'device_id' => $deviceId,
+            'token_type' => 'Bearer',
+
+            'expires_in' => max(
+                0,
+                (int) $accessPayload['exp']
+                    - now()->timestamp
+            ),
+            'refresh_expires_in' => max(
+                0,
+                (int) $refreshPayload['exp']
+                    - now()->timestamp
+            ),
+        ];
+    }
 
     public function refreshTokens(
         Request $request,
@@ -404,9 +556,9 @@ class AuthService
                 'refresh_token',
                 $refreshTokenHash
             )
-            ->whereNull(
-                'revoked_at'
-            )
+            // ->whereNull(
+            //     'revoked_at'
+            // )
             ->where(
                 'refresh_expiry',
                 '>',
@@ -453,7 +605,8 @@ class AuthService
                 $token,
                 $user,
                 $deviceId,
-                $refreshTokenHash
+                $refreshTokenHash,
+                $refreshToken
             ) {
 
                 /*
@@ -479,12 +632,6 @@ class AuthService
                 | Token must still be active
                 |--------------------------------------------------------------------------
                 */
-
-                if (
-                    $lockedToken->revoked_at !== null
-                ) {
-                    return null;
-                }
 
                 /*
                 |--------------------------------------------------------------------------
@@ -518,94 +665,27 @@ class AuthService
 
                 /*
                 |--------------------------------------------------------------------------
-                | Revoke old token pair
-                |--------------------------------------------------------------------------
-                */
-
-                $lockedToken->update([
-                    'revoked_at' => now(),
-                ]);
-
-                /*
-                |--------------------------------------------------------------------------
                 | Create new access + refresh token pair
                 |--------------------------------------------------------------------------
                 */
 
-                return $this->createTokens(
-                    $request,
-                    $user,
-                    $deviceId
+                return $this->createAccessToken(
+                    request: $request,
+                    user: $user,
+                    refreshToken: $refreshToken,
+                    deviceId: $deviceId,
                 );
             }
         );
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | API Logout / Revoke JWT
-    |--------------------------------------------------------------------------
-    */
-
-    // public function logout(
-    //     string $accessToken
-    // ): void {
-
-    //     $accessToken = trim(
-    //         $accessToken
-    //     );
-
-    //     if ($accessToken === '') {
-    //         return;
-    //     }
-
-    //     /*
-    //     |--------------------------------------------------------------------------
-    //     | Decode JWT
-    //     |--------------------------------------------------------------------------
-    //     */
-
-    //     $payload = $this->jwtService->payload(
-    //         $accessToken
-    //     );
-
-    //     if (!$payload) {
-    //         return;
-    //     }
-
-    //     /*
-    //     |--------------------------------------------------------------------------
-    //     | Get JTI
-    //     |--------------------------------------------------------------------------
-    //     */
-
-    //     $jti = $payload['jti'] ?? null;
-
-    //     if (!$jti) {
-    //         return;
-    //     }
-
-    //     /*
-    //     |--------------------------------------------------------------------------
-    //     | Revoke token session
-    //     |--------------------------------------------------------------------------
-    //     */
-
-    //     UserToken::query()
-    //         ->where('jti', $jti)
-    //         ->whereNull('revoked_at')
-    //         ->update([
-    //             'revoked_at' => now(),
-    //         ]);
-    // }
-
     public function logout(
-        string $accessToken
+        string $refreshToken
     ): void {
 
-        $accessToken = trim($accessToken);
+        $refreshToken = trim($refreshToken);
 
-        if ($accessToken === '') {
+        if ($refreshToken === '') {
             return;
         }
 
@@ -616,7 +696,7 @@ class AuthService
         */
 
         $payload = $this->jwtService->payload(
-            $accessToken
+            $refreshToken
         );
 
         /*
@@ -625,48 +705,48 @@ class AuthService
         |--------------------------------------------------------------------------
         */
 
-        dd([
-            'php_time' => time(),
+        // dd([
+        //     'php_time' => time(),
 
-            'php_utc' => gmdate(
-                'Y-m-d H:i:s.u',
-                time()
-            ),
+        //     'php_utc' => gmdate(
+        //         'Y-m-d H:i:s.u',
+        //         time()
+        //     ),
 
-            'php_local' => now()->format(
-                'Y-m-d H:i:s.uP'
-            ),
+        //     'php_local' => now()->format(
+        //         'Y-m-d H:i:s.uP'
+        //     ),
 
-            'app_timezone' => config('app.timezone'),
+        //     'app_timezone' => config('app.timezone'),
 
-            'iat' => $payload['iat'] ?? null,
+        //     'iat' => $payload['iat'] ?? null,
 
-            'iat_utc' => isset($payload['iat'])
-                ? gmdate(
-                    'Y-m-d H:i:s.u',
-                    (int) $payload['iat']
-                )
-                : null,
+        //     'iat_utc' => isset($payload['iat'])
+        //         ? gmdate(
+        //             'Y-m-d H:i:s.u',
+        //             (int) $payload['iat']
+        //         )
+        //         : null,
 
-            'exp' => $payload['exp'] ?? null,
+        //     'exp' => $payload['exp'] ?? null,
 
-            'exp_utc' => isset($payload['exp'])
-                ? gmdate(
-                    'Y-m-d H:i:s.u',
-                    (int) $payload['exp']
-                )
-                : null,
+        //     'exp_utc' => isset($payload['exp'])
+        //         ? gmdate(
+        //             'Y-m-d H:i:s.u',
+        //             (int) $payload['exp']
+        //         )
+        //         : null,
 
-            'ttl' => isset(
-                $payload['iat'],
-                $payload['exp']
-            )
-                ? (
-                    (int) $payload['exp']
-                    - (int) $payload['iat']
-                )
-                : null,
-        ]);
+        //     'ttl' => isset(
+        //         $payload['iat'],
+        //         $payload['exp']
+        //     )
+        //         ? (
+        //             (int) $payload['exp']
+        //             - (int) $payload['iat']
+        //         )
+        //         : null,
+        // ]);
 
         /*
         |--------------------------------------------------------------------------

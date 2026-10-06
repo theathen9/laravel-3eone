@@ -1,0 +1,5 @@
+Insert employee
+ID = 1  → success
+ID = 2  → success
+ID = 3  → failed
+ID = 4  → success

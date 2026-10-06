@@ -10,7 +10,9 @@ export default defineConfig({
                 "resources/css/app.css",
                 "resources/css/signin.css",
                 "resources/js/app.js",
-                'resources/js/dashboard.js',
+                "resources/js/dashboard.js",
+                "resources/js/address.js",
+                "resources/js/student-registration.js",
             ],
             refresh: true,
             fonts: [

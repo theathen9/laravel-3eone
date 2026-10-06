@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -10,16 +11,37 @@ class UserController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
+        $users = User::with('reference')
+            ->where('status', 1)
+            ->get();
+
+        $users->each(function ($user) {
+            $user->profile_image = $user->reference?->profile_image;
+        });
+
         return response()->json([
-            'message' => 'Users API',
+            'message' => 'Users retrieved successfully',
+            'data' => $users,
         ]);
     }
 
     public function show(int $id): JsonResponse
     {
+        $user = User::with('reference')
+            ->where('status', 1)
+            ->find($id);
+
+        if (! $user) {
+            return response()->json([
+                'message' => 'User not found',
+            ], 404);
+        }
+
+        $user->profile_image = $user->reference?->profile_image;
+
         return response()->json([
-            'message' => 'User details',
-            'user_id' => $id,
+            'message' => 'User retrieved successfully',
+            'data' => $user,
         ]);
     }
 }

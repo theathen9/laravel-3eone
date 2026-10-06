@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -45,11 +46,17 @@ class User extends Authenticatable
     {
         return [
             'password' => 'hashed',
-            'status' => 'boolean',
+            'status' => 'integer',
             'last_login' => 'datetime',
             'reset_expiry' => 'datetime',
         ];
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
 
     public function role(): BelongsTo
     {
@@ -67,5 +74,10 @@ class User extends Authenticatable
             'user_id',
             'user_id'
         );
+    }
+
+    public function reference(): MorphTo
+    {
+        return $this->morphTo();
     }
 }

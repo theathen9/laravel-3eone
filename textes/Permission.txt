@@ -1,0 +1,27 @@
+Permission		Admin	Accountant	Teacher	Student	Guest
+MANAGE_SYSTEM		✓	—	—	—	—
+MANAGE_USERS		✓	✓	—	—	—
+MANAGE_PERMISSIONS	✓	—	—	—	—
+MANAGE_ROLES		✓	—	—	—	—
+MANAGE_ASSIGN_PERMISSIONS✓	—	—	—	—
+EMPLOYEE_MANAGE		✓	✓	—	—	—
+STUDENT_MANAGE		✓	✓	✓	—	—
+ATTENDANCE_MANAGE	✓	✓	✓	✓*	—
+SCORE_MANAGE		✓	—	✓	✓*	—
+ACADEMIC_MANAGE		✓	—	✓	✓*	✓*
+CLASS_MANAGE		✓	✓	✓	—	—
+SCHEDULE_MANAGE		✓	—	✓	✓*	—
+ASSIGNMENT_MANAGE	✓	—	✓	✓*	—
+EXAM_MANAGE		✓	—	✓	✓*	—
+FINANCE_MANAGE		✓	✓	—	—	—
+REPORT_VIEW		✓	✓	✓	✓	—
+REPORT_EXPORT		✓	✓	✓	—	—
+
+* = limited access, such as viewing their own records or submitting/viewing their
+
+Role	Main purpose
+Admin	Full system administration
+Accountant	Users, students, employees, attendance, classes, and finance
+Teacher	Students, attendance, scores, classes, schedules, assignments, exams
+Student	View own academic information, attendance, scores, assignments, exams
+Guest	Limited public academic information

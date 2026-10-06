@@ -1,8 +1,13 @@
 <?php
 
 // ./routes/api.php
-use App\Http\Controllers\Api\Auth\ApiAuthController;
-use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\UserController;
+use App\Http\Controllers\Api\V1\StudentRegistrationController;
+use App\Http\Controllers\Api\V1\InvoiceController;
+use App\Http\Controllers\Api\V1\ClassController;
+use App\Http\Controllers\Api\V1\AddressController;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -22,14 +27,19 @@ Route::prefix('v1')->group(function () {
     */
 
     Route::post('/auth/login', [
-        ApiAuthController::class,
+        AuthController::class,
         'login',
     ])->name('api.v1.auth.login');
 
+    Route::post('/auth/logout', [
+        AuthController::class,
+        'logout',
+    ])->name('api.v1.auth.logout');
+
     Route::post('/auth/refresh', [
-        ApiAuthController::class,
+        AuthController::class,
         'refresh',
-    ])->name('auth.refresh');
+    ])->name('api.v1.auth.refresh');
 
     /*
     |--------------------------------------------------------------------------
@@ -40,24 +50,43 @@ Route::prefix('v1')->group(function () {
     Route::middleware('api.auth')->group(function () {
 
         Route::get('/auth/token', [
-            ApiAuthController::class,
+            AuthController::class,
             'token',
         ])->name('api.v1.auth.token');
 
-        Route::post('/auth/logout', [
-            ApiAuthController::class,
-            'logout',
-        ])->name('api.v1.auth.logout');
-
         /*
         |--------------------------------------------------------------------------
-        | Users - JWT Protected
+        | Users
         |--------------------------------------------------------------------------
         */
 
-        Route::get('/users', [UserController::class, 'index']);
-        Route::get('/users/{id}', [UserController::class, 'show']);
+        Route::get('/users', [
+            UserController::class,
+            'index',
+        ]);
 
+        Route::get('/users/{id}', [
+            UserController::class,
+            'show',
+        ]);
+
+
+        /* |-------------------------------------------------------------------------- 
+        | Student Registration 
+        |-------------------------------------------------------------------------- */
+        Route::post('/students/register-process', [StudentRegistrationController::class, 'process']);
+        /* |-------------------------------------------------------------------------- 
+        | Available Classes 
+        |-------------------------------------------------------------------------- */
+        Route::get('/classes/available', [ClassController::class, 'available']); /* 
+        |-------------------------------------------------------------------------- 
+        | Invoice 
+        |-------------------------------------------------------------------------- */
+        Route::get('/invoices/{invoice}/pdf', [InvoiceController::class, 'pdf']);
+        Route::get(
+            '/invoices/{invoice}/preview',
+            [InvoiceController::class, 'previewInvoice']
+        )->name('api.v1.invoices.preview');
     });
 
     /*
@@ -97,4 +126,6 @@ Route::prefix('v1')->group(function () {
         ]);
     });
 
+    /* |-------------------------------------------------------------------------- | Address |-------------------------------------------------------------------------- */
+    Route::get('/address', [AddressController::class, 'index',]);
 });

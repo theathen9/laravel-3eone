@@ -24,8 +24,7 @@ return new class extends Migration
 
             $table->string('location', 20)->nullable();
 
-            $table->boolean('status')
-                ->default(true);
+            $table->smallInteger('status')->default(1);
 
             $table->timestamp('created_at')
                 ->useCurrent();

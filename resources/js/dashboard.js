@@ -6,7 +6,8 @@ console.log("Laravel application dashboard loaded");
 
 async function testApi() {
     try {
-        const response = await apiFetch("/api/v1/auth/token");
+        const response = await apiFetch(`${APP_API_URL}/v1/auth/token`);
+        console.log("api fetch:", apiFetch);
 
         const data = await response.json();
 
@@ -16,4 +17,4 @@ async function testApi() {
     }
 }
 
-testApi();
+// testApi();

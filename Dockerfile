@@ -25,6 +25,7 @@ COPY composer.json composer.lock ./
 
 RUN --mount=type=cache,target=/root/.composer/cache \
     composer install \
+    composer update \
         --no-dev \
         --prefer-dist \
         --optimize-autoloader \

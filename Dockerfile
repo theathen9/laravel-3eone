@@ -25,7 +25,6 @@ COPY composer.json composer.lock ./
 
 RUN --mount=type=cache,target=/root/.composer/cache \
     composer install \
-    composer require barryvdh/laravel-dompdf \
         --no-dev \
         --prefer-dist \
         --optimize-autoloader \

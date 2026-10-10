@@ -79,7 +79,9 @@ const employeeRegistration = {
         try {
             const formData = new FormData(this.elements.form);
 
-            const response = await apiFetch("/api/v1/employees", {
+            const APP_API_URL = import.meta.env.VITE_APP_API_URL || "/api";
+
+            const response = await apiFetch(`${APP_API_URL}/v1/employees`, {
                 method: "POST",
                 body: formData,
                 headers: {

@@ -96,6 +96,12 @@ class EmployeesRequest extends FormRequest
                 'string',
                 'max:20',
             ],
+            'profile_image' => [
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'max:2048',
+            ],
 
             'created_by' => [
                 'nullable',

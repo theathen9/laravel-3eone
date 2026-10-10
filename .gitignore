@@ -50,7 +50,9 @@ Homestead.yaml
 
 # Temporary copied files
 *copy*.php
+* copy*.php
 *copy*.yml
+* copy*.yml
 
 # Docker
 # Keep these tracked:

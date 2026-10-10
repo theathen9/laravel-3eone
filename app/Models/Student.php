@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Enrollment;
 
 class Student extends Model
 {
@@ -18,6 +20,7 @@ class Student extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'id',
         'student_id',
         'student_code',
 
@@ -81,6 +84,14 @@ class Student extends Model
             Employee::class,
             'created_by',
             'employee_id'
+        );
+    }
+    public function enrollments(): HasMany
+    {
+        return $this->hasMany(
+            Enrollment::class,
+            'student_id',
+            'student_id'
         );
     }
 }

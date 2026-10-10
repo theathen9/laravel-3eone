@@ -6,13 +6,17 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\ClassModel;
+use App\Models\Student;
 use App\Models\PaymentMethod;
 
 class StudentRegistrationController extends Controller
 {
     public function index()
     {
-        $total = DB::table('tblStudents')->count() + 1;
+        $total = Student::query()
+            ->where('status', 'active')
+            ->count() + 1;
+
         $classes = ClassModel::query()
             ->with([
                 'course',

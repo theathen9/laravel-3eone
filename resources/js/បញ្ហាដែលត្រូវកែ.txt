@@ -1,0 +1,40 @@
+បញ្ហាដែលត្រូវកែ
+1. មាន showError() ស្ទួនគ្នា
+អ្នកបានប្រកាស showError() ពីរដង៖
+
+javascript
+showError(message) {
+    this.showMessage(message, "danger");
+},
+និងនៅខាងក្រោម៖
+
+javascript
+showError(message) {
+    alert(message);
+},
+JavaScript នឹងប្រើ method ដែលប្រកាសក្រោយគេ ដូច្នេះ Error នឹងបង្ហាញជា alert() ជំនួសឱ្យ Bootstrap alert។
+
+ដំណោះស្រាយ៖ លុប showError() ទីពីរចេញ។
+
+2. ប៊ូតុង Register អាចត្រូវបានចុចច្រើនដង
+បច្ចុប្បន្នអ្នកបិទប៊ូតុងនៅពេល submit ប៉ុន្តែបើ submit() ត្រូវបានហៅម្តងទៀត ខណៈពេលកំពុងរក្សាទុក អាចមានបញ្ហា។ គួរត្រួតពិនិត្យ isSaving នៅក្នុង submit() ផងដែរ។
+
+3. ការបង្ហាញ Profile Image Preview
+អ្នកប្រើ URL.createObjectURL(file) បានត្រឹមត្រូវ ប៉ុន្តែគួរ revoke URL ចាស់ ដើម្បីជៀសវាងការប្រើប្រាស់ memory មិនចាំបាច់។
+
+4. ការអាន API Response
+await response.json() អាចបង្ក Error ប្រសិនបើ API ត្រឡប់ HTML ឬ response ទទេ។ គួរតែដោះស្រាយករណីនេះផងដែរ។
+
+
+ត្រូវពិនិត្យបន្ថែម
+Form ត្រូវមាន id="employeeRegistration".
+
+ប៊ូតុង Register ត្រូវមាន id="finalSubmit" និង type="submit".
+
+Input រូបភាពត្រូវមាន id="profile_image" និង name="profile_image".
+
+Backend Laravel ត្រូវត្រឡប់ JSON ដែលមាន success: true នៅពេលចុះឈ្មោះជោគជ័យ។
+
+បើ API ប្រើ Laravel validation ត្រូវប្រាកដថា apiFetch() មិនបាត់បង់ Content-Type ឬ headers សំខាន់ៗផ្សេងទៀត។ សម្រាប់ FormData ជាទូទៅមិនត្រូវកំណត់ Content-Type: multipart/form-data ដោយដៃទេ ព្រោះ browser ត្រូវបន្ថែម boundary ដោយស្វ័យប្រវត្តិ។
+
+ចំណាំ៖ កូដនេះការពារការចុច Submit ច្រើនដងក្នុង browser មួយ ប៉ុន្តែមិនធានាថាគ្មានការបង្កើត Employee ស្ទួននៅ server ទេ។ គួរប្រើ database constraints ឬ idempotency នៅ backend ប្រសិនបើត្រូវការការពារការចុះឈ្មោះស្ទួនយ៉ាងម៉ឺងម៉ាត់។

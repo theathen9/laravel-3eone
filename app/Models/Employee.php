@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Models\EmployeePositionHistory;
+use App\Models\EmployeeSubject;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Employee extends Model
 {
@@ -19,6 +22,7 @@ class Employee extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'employee_id',
         'department_id',
         'position_id',
 
@@ -30,10 +34,10 @@ class Employee extends Model
         'gender',
         'dob',
 
-        'birth_village',
-        'birth_commune',
-        'birth_district',
-        'birth_province',
+        'birth_addr_village',
+        'birth_addr_commune',
+        'birth_addr_district',
+        'birth_addr_province',
 
         'curr_addr_village',
         'curr_addr_commune',
@@ -60,6 +64,23 @@ class Employee extends Model
     | Relationships
     |--------------------------------------------------------------------------
     */
+    public function positionHistories(): HasMany
+    {
+        return $this->hasMany(
+            EmployeePositionHistory::class,
+            'employee_id',
+            'employee_id'
+        );
+    }
+
+    public function subjects(): HasMany
+    {
+        return $this->hasMany(
+            EmployeeSubject::class,
+            'employee_id',
+            'employee_id'
+        );
+    }
 
     public function department(): BelongsTo
     {

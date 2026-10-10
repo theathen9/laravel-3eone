@@ -21,7 +21,7 @@ class StudentRegistrationRequest extends FormRequest
             ],
 
             'student_id' => [
-                'required',
+                'nullable',
                 'integer',
                 'min:1',
             ],

@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Session;
 
 class StudentRegistrationService
 {
@@ -37,6 +38,21 @@ class StudentRegistrationService
         });
     }
 
+    protected function generateStudentId(): int
+    {
+        return (int) (
+            Student::where('status', 'active')
+            ->whereNotNull('student_id')
+            ->max('student_id') ?? 0
+        ) + 1;
+    }
+
+    protected function findId(): int
+    {
+        return ((int) Student::max('student_id')) + 1;
+    }
+
+
     /**
      * STEP 1
      *
@@ -49,11 +65,13 @@ class StudentRegistrationService
 
         // Create a new Student Eloquent model
         $student = new Student();
+        $studentId = $this->generateStudentId();
+
 
         $studentData = [
             // Student
-            'student_id' => $data['student_id'] ?? null,
-            'student_code' => $data['student_code'] ?? null,
+            'student_id' => $studentId,
+            $student->student_code = null,
 
 
             'first_name_kh' => $data['first_name_kh'] ?? null,
@@ -146,18 +164,39 @@ class StudentRegistrationService
         }
 
         // Fill and save the Student model
-        $student->fill($studentData);
-        $student->save();
+        /*
+     * Create student draft.
+     */
 
-        // student_id is available after save()
+        $existingStudent = Student::query()
+            ->where('student_id', $studentId)
+            ->where('status', 'draft')
+            ->first();
+
+        if ($existingStudent) {
+            $existingStudent->update($studentData);
+            $student = $existingStudent;
+        } else {
+            $student = Student::create($studentData);
+        }
+
+
+
+        Session::put('student_registration', [
+            'student_id' => $student->studentId,
+            'step'       => 1,
+        ]);
+
         return [
             'success' => true,
             'message' => 'Student information saved.',
-            'step' => 1,
+            'step'    => 1,
+
             'data' => [
                 ...$data,
-                'student_id' => $student->student_id,
-                'student_code' => $student->student_code,
+
+                // Database PK used by the wizard
+                'student_id' => $student->studentId,
             ],
         ];
     }
@@ -169,15 +208,22 @@ class StudentRegistrationService
      */
     protected function saveClasses(array $data): array
     {
-        $studentId = $data['student_id'] ?? null;
+        $studentDbId = $data['student_id']
+            ?? Session::get('student_registration.student_id');
 
-        if (!$studentId) {
+        if (!$studentDbId) {
             throw new \InvalidArgumentException(
-                'Student ID is required.'
+                'Student registration session not found.'
             );
         }
 
-        $student = Student::findOrFail($studentId);
+        $student = Student::findOrFail($studentDbId);
+
+        if ($student->status !== 'draft') {
+            throw new \InvalidArgumentException(
+                "Student registration {$student->id} is not a draft."
+            );
+        }
 
         $classIds = $data['class_ids'] ?? [];
 
@@ -235,6 +281,8 @@ class StudentRegistrationService
             ]);
         }
 
+        Session::put('student_registration.step', 2);
+
         return [
             'success' => true,
             'step' => 2,
@@ -250,7 +298,8 @@ class StudentRegistrationService
      */
     protected function completeRegistration(array $data): array
     {
-        $studentId = $data['student_id'] ?? null;
+        $studentId = $data['student_id']
+            ?? Session::get('student_registration.student_id');
 
         if (!$studentId) {
             throw new \InvalidArgumentException(
@@ -370,8 +419,16 @@ class StudentRegistrationService
         /*
          * Registration is now complete.
          */
+        $studentId = $this->generateStudentId();
+
+        $student->student_id = $studentId;
+        $student->student_code = 'STU-' .
+            str_pad($studentId, 2, '0', STR_PAD_LEFT);
+
         $student->status = 'active';
         $student->save();
+
+        Session::forget('student_registration');
 
         return [
             'success' => true,

@@ -105,7 +105,7 @@ class AuthController extends Controller
         $accessTokenTtl = max(
             1,
             (int) ceil(
-                $tokens['expires_in']
+                $tokens['expires_in'] / 60
             )
         );
 

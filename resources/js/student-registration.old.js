@@ -674,118 +674,34 @@ const StudentRegistration = {
             this.elements.balance.textContent = `$${this.formatMoney(balance)}`;
         }
     },
-    // =========================================================
-    // INVOICE PDF DOWNLOAD
-    // =========================================================
-
-    async downloadInvoicePdf(invoiceId) {
-        if (!invoiceId) {
-            throw new Error("Invoice ID is missing.");
-        }
-
-        const invoiceUrl = `/api/v1/invoices/${encodeURIComponent(invoiceId)}/pdf`;
-
-        const response = await apiFetch(invoiceUrl, {
-            method: "GET",
-            headers: {
-                Accept: "application/pdf",
-            },
-        });
-
-        if (!response.ok) {
-            let message = `Unable to download invoice (HTTP ${response.status}).`;
-
-            try {
-                const errorData = await response.clone().json();
-
-                message = errorData.message || errorData.error || message;
-            } catch {
-                // The server may return a non-JSON error response.
-            }
-
-            throw new Error(message);
-        }
-
-        const blob = await response.blob();
-
-        if (!blob.size) {
-            throw new Error("The invoice PDF is empty.");
-        }
-
-        // Verify the actual PDF signature instead of trusting
-        // the Content-Type header alone.
-        const header = await blob.slice(0, 5).text();
-
-        if (header !== "%PDF-") {
-            throw new Error(
-                "The server response is not a valid PDF. Please check the invoice API.",
-            );
-        }
-
-        // Release the previous object URL if one exists.
-        if (this.invoiceDownloadUrl) {
-            URL.revokeObjectURL(this.invoiceDownloadUrl);
-        }
-
-        this.invoiceDownloadUrl = URL.createObjectURL(blob);
-
-        const link = document.createElement("a");
-
-        link.href = this.invoiceDownloadUrl;
-        link.download = `invoice-${invoiceId}.pdf`;
-        link.style.display = "none";
-
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-
-        // Keep the URL alive long enough for the browser to
-        // start processing the download.
-        const urlToRevoke = this.invoiceDownloadUrl;
-
-        this.invoiceDownloadUrl = null;
-
-        setTimeout(() => {
-            URL.revokeObjectURL(urlToRevoke);
-        }, 60000);
-
-        return true;
-    },
 
     // =========================================================
     // FINAL SUBMIT
     // =========================================================
 
     async submit() {
-        const button = this.elements.finalSubmit;
-
-        // Prevent duplicate submissions.
-        if (this.isSubmitting || this.isSaving) {
+        if (this.isSaving) {
             return;
         }
+        const button = this.elements.finalSubmit;
 
-        // Validate the current step.
         if (!this.validateCurrentStep()) {
             return;
         }
 
-        // At least one class is required.
         if (!this.selectedClasses.length) {
-            this.showError("Please add at least one class.");
+            alert("Please add at least one class.");
             return;
         }
-
-        this.isSubmitting = true;
 
         if (button) {
             button.disabled = true;
         }
 
         try {
-            // -------------------------------------------------
-            // 1. Save the final registration step.
-            // -------------------------------------------------
-
+            /*
+             * Step 3 is saved through the Laravel API.
+             */
             const data = await this.autoSave();
 
             if (!data?.success) {
@@ -796,55 +712,42 @@ const StudentRegistration = {
                 );
             }
 
-            // -------------------------------------------------
-            // 2. Get the invoice ID from the API response.
-            // -------------------------------------------------
+            this.showMessage(
+                data.message || "Employee registered successfully!",
+                "success",
+            );
 
             const invoiceId = data.invoice_id || this.lastInvoiceId;
 
-            if (
-                invoiceId === null ||
-                invoiceId === undefined ||
-                String(invoiceId).trim() === ""
-            ) {
-                throw new Error(
-                    "Registration was saved, but the server did not return an invoice ID.",
-                );
+            if (!invoiceId) {
+                throw new Error("Invoice ID was not returned by the server.");
             }
 
             this.lastInvoiceId = invoiceId;
 
-            // -------------------------------------------------
-            // 3. Download and verify the invoice PDF.
-            // -------------------------------------------------
+            /*
+             * Open invoice in a new tab.
+             */
+            const invoiceUrl = `/api/v1/invoices/${encodeURIComponent(invoiceId)}/pdf`;
 
-            await this.downloadInvoicePdf(invoiceId);
+            const link = document.createElement("a");
 
-            // -------------------------------------------------
-            // 4. Show success and redirect.
-            // -------------------------------------------------
+            link.href = invoiceUrl;
+            link.download = `invoice-${invoiceId}.pdf`;
 
-            this.showMessage(
-                "Student registered successfully. Invoice download has started.",
-                "success",
-            );
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
 
-            // Give the browser time to start the download.
-            setTimeout(() => {
-                window.location.href = "/admin/registrations/students";
-            }, 1000);
+            /*
+             * Registration completed.
+             */
+            window.location.href = "/admin/registrations/students";
         } catch (error) {
-            console.error("Student registration / invoice error:", error);
+            console.error("Student registration failed:", error);
 
-            this.showError(
-                error.message || "Registration or invoice download failed.",
-            );
-
-            // Do not automatically submit the registration again.
-            // The registration may already have been saved.
+            this.showError(error.message || "Student registration failed.");
         } finally {
-            this.isSubmitting = false;
-
             if (button) {
                 button.disabled = false;
             }

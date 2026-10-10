@@ -26,10 +26,10 @@ return new class extends Migration
             $table->date('dob');
 
             // Birth address
-            $table->string('birth_village', 100);
-            $table->string('birth_commune', 100);
-            $table->string('birth_district', 100);
-            $table->string('birth_province', 100);
+            $table->string('birth_addr_village', 100);
+            $table->string('birth_addr_commune', 100);
+            $table->string('birth_addr_district', 100);
+            $table->string('birth_addr_province', 100);
 
             // Current address
             $table->string('curr_addr_village', 100);

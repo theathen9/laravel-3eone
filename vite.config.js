@@ -13,6 +13,7 @@ export default defineConfig({
                 "resources/js/dashboard.js",
                 "resources/js/address.js",
                 "resources/js/student-registration.js",
+                "resources/js/employee-registration.js",
             ],
             refresh: true,
             fonts: [

@@ -57,6 +57,13 @@
 
             </div>
 
+            <!-- Registration message -->
+            <div id="registrationMessage"
+                class="alert d-none"
+                role="alert"
+                aria-live="polite">
+            </div>
+
 
             {{-- =========================================================
                 STEP 1
@@ -991,7 +998,7 @@
                             id="discount"
                             name="discount"
                             class="form-control"
-                            value="{{ old('discount', 0) }}"
+                            value="0"
                             min="0"
                             max="100">
 
@@ -1009,7 +1016,7 @@
                             id="paid"
                             name="amount_paid"
                             class="form-control"
-                            value="{{ old('amount_paid') }}"
+                            value="0"
                             min="0"
                             required>
 

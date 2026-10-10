@@ -4,6 +4,7 @@
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\UserController;
 use App\Http\Controllers\Api\V1\StudentRegistrationController;
+use App\Http\Controllers\Api\V1\EmployeeController;
 use App\Http\Controllers\Api\V1\InvoiceController;
 use App\Http\Controllers\Api\V1\ClassController;
 use App\Http\Controllers\Api\V1\AddressController;
@@ -69,6 +70,14 @@ Route::prefix('v1')->group(function () {
             UserController::class,
             'show',
         ]);
+        /* |-------------------------------------------------------------------------- 
+        | Student Registration 
+        |-------------------------------------------------------------------------- */
+        Route::get('/employees', [EmployeeController::class, 'index']);
+        Route::post('/employees', [EmployeeController::class, 'process']);
+        Route::get('/employees/{id}', [EmployeeController::class, 'show']);
+        Route::put('/employees/{id}', [EmployeeController::class, 'update']);
+        Route::delete('/employees/{id}', [EmployeeController::class, 'destroy']);
 
 
         /* |-------------------------------------------------------------------------- 

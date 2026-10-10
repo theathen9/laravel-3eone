@@ -7,6 +7,7 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Illuminate\Support\Str;
 use RuntimeException;
+use InvalidArgumentException;
 use Throwable;
 
 class JwtService
@@ -202,11 +203,13 @@ class JwtService
             |--------------------------------------------------------------------------
             */
 
-            foreach ([
-                'iat',
-                'nbf',
-                'exp',
-            ] as $claim) {
+            foreach (
+                [
+                    'iat',
+                    'nbf',
+                    'exp',
+                ] as $claim
+            ) {
                 if (
                     ! isset($data[$claim]) ||
                     ! is_numeric($data[$claim])
@@ -216,7 +219,6 @@ class JwtService
             }
 
             return $data;
-
         } catch (Throwable) {
             return null;
         }
@@ -264,7 +266,7 @@ class JwtService
         return max(
             0,
             (int) $payload['exp']
-            - now()->timestamp
+                - now()->timestamp
         );
     }
 }

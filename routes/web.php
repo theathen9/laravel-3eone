@@ -5,6 +5,9 @@ use App\Http\Controllers\Account\DashboardController as AccountDashboardControll
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\Registration\StudentRegistrationController;
 use App\Http\Controllers\Admin\Registration\EmployeeRegistrationController;
+use App\Http\Controllers\Admin\PeopleController;
+use App\Http\Controllers\Admin\AcademicController;
+use App\Http\Controllers\Admin\InstituteController;
 
 use App\Http\Controllers\Auth\WebAuthController;
 use Illuminate\Http\Request;
@@ -105,6 +108,58 @@ Route::middleware([
             'dashboard',
         ])->name('dashboard');
 
+        // institute
+        Route::get('institute/branches', [
+            InstituteController::class,
+            'branches',
+        ])->name('institute.branches');
+
+        Route::get('institute/rooms', [
+            InstituteController::class,
+            'rooms',
+        ])->name('institute.positions');
+
+        Route::get('institute/positions', [
+            InstituteController::class,
+            'positions',
+        ])->name('institute.positions');
+
+        Route::get('institute/rooms', [
+            InstituteController::class,
+            'rooms',
+        ])->name('institute.rooms');
+
+        // academic
+        Route::get(
+            '/academic/academic-years',
+            [AcademicController::class, 'academicYears']
+        )->name('academic.academic-years');
+
+        Route::get(
+            '/academic/academic-classes',
+            [AcademicController::class, 'academicClasses']
+        )->name('academic.academic-classes');
+
+        Route::get(
+            '/academic/academic-subjects',
+            [AcademicController::class, 'academicSubjects']
+        )->name('academic.academic-subjects');
+
+        Route::get(
+            '/academic/academic-courses',
+            [AcademicController::class, 'academicCourses']
+        )->name('academic.academic-courses');
+
+        // people
+        Route::get('/people/employees', [PeopleController::class, 'employees'])
+            ->name('people.employees');
+        Route::get('/people/teachers', [PeopleController::class, 'teachers'])
+            ->name('people.teachers');
+        Route::get('/people/students', [PeopleController::class, 'students'])
+            ->name('people.students');
+
+        // registrations
+
         Route::get('/registrations/students', [
             StudentRegistrationController::class,
             'index',
@@ -114,11 +169,6 @@ Route::middleware([
             EmployeeRegistrationController::class,
             'index',
         ])->name('registrations.employees.index');
-
-        Route::post('/registrations/employees', [
-            EmployeeRegistrationController::class,
-            'store',
-        ])->name('registrations.employees.store');
     });
 
 

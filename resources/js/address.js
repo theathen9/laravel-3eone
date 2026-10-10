@@ -263,6 +263,8 @@ export function setupAddressAPI(prefix) {
         // ============================================
 
         toggleOther(district, otherDistrict, `${prefix}_district`);
+        toggleOther(commune, otherCommune, `${prefix}_commune`);
+        toggleOther(village, otherVillage, `${prefix}_village`);
 
         if (!districtValue) {
             return;
@@ -314,6 +316,7 @@ export function setupAddressAPI(prefix) {
 
         if (this.value === "other") {
             toggleOther(otherCommune, commune, `${prefix}_commune`);
+            toggleOther(otherVillage, village, `${prefix}_village`);
 
             return;
         }
@@ -323,6 +326,7 @@ export function setupAddressAPI(prefix) {
         // ============================================
 
         toggleOther(commune, otherCommune, `${prefix}_commune`);
+        toggleOther(village, otherVillage, `${prefix}_village`);
 
         if (!communeValue) {
             return;

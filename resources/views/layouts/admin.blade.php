@@ -43,6 +43,8 @@
     <link
         rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 
     {{-- Application CSS / JS --}}
     @vite([
@@ -161,21 +163,17 @@
 
                 </div>
 
-                {{-- =========================================================
-             |   FOOTER
-            ========================================================== --}}
+                {{-- Footer --}}
                 @hasSection('footer')
                 @yield('footer')
                 @else
-                <footer
-                    class="text-center text-muted py-2">
+                <footer class="w-100 text-center text-muted py-4 mt-auto">
                     <small>
                         &copy; {{ date('Y') }}
                         {{ config('app.name', '3EONE') }}.
                         All rights reserved.
                     </small>
                 </footer>
-
                 @endif
             </div>
 
@@ -201,6 +199,7 @@
 
 
     @stack('scripts')
+
 
 </body>
 

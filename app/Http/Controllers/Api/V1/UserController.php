@@ -13,6 +13,7 @@ class UserController extends Controller
     {
         $users = User::with('reference')
             ->where('status', 1)
+            ->orderBy('user_id', 'asc')
             ->get();
 
         $users->each(function ($user) {
@@ -20,6 +21,7 @@ class UserController extends Controller
         });
 
         return response()->json([
+            'success' => true,
             'message' => 'Users retrieved successfully',
             'data' => $users,
         ]);

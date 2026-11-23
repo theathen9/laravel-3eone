@@ -85,16 +85,26 @@ class PeopleController extends Controller
 
     public function employees(Request $request)
     {
-        $query = Employee::with('position');
+        $query = Employee::with(['position', 'branch']);
 
         if ($request->filled('search')) {
-            $search = $request->input('search');
+            $search = trim($request->input('search'));
 
             $query->where(function ($q) use ($search) {
                 $q->where('first_name_en', 'like', "%{$search}%")
                     ->orWhere('last_name_en', 'like', "%{$search}%")
-                    // ->orWhere('employee_code', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('employee_code', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhereHas('branch', function ($branchQuery) use ($search) {
+                        $branchQuery->whereRaw(
+                            'LOWER(branch_code) LIKE ?',
+                            ['%' . mb_strtolower($search) . '%']
+                        );
+                    });
+
+                if (ctype_digit($search)) {
+                    $q->orWhere('employee_id', (int) $search);
+                }
             });
         }
 
@@ -112,7 +122,7 @@ class PeopleController extends Controller
         $inactiveEmployees = Employee::where('status', '0')->count();
 
         $teacherEmployees = Employee::whereHas('position', function ($q) {
-            $q->where('position_name', 'like', '%teacher%');
+            $q->whereRaw('LOWER(position_name) LIKE ?', ['%teacher%']);
         })->count();
 
         return view('admin.people.employees', compact(
@@ -127,9 +137,9 @@ class PeopleController extends Controller
     public function teachers(Request $request)
     {
         // Only employees whose position is Teacher
-        $query = Employee::with('position')
+        $query = Employee::with(['position', 'branch'])
             ->whereHas('position', function ($q) {
-                $q->where('position_name', 'like', '%teacher%');
+                $q->whereRaw('LOWER(position_name) LIKE ?', ['%teacher%']);
             });
 
         // Search teachers
@@ -141,8 +151,19 @@ class PeopleController extends Controller
                     ->orWhere('last_name_en', 'like', "%{$search}%")
                     ->orWhere('first_name_kh', 'like', "%{$search}%")
                     ->orWhere('last_name_kh', 'like', "%{$search}%")
+                    ->orWhere('employee_code', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('phone1', 'like', "%{$search}%");
+                    ->orWhere('phone1', 'like', "%{$search}%")
+                    ->orWhereHas('branch', function ($branchQuery) use ($search) {
+                        $branchQuery->whereRaw(
+                            'LOWER(branch_code) LIKE ?',
+                            ['%' . mb_strtolower($search) . '%']
+                        );
+                    });
+
+                if (ctype_digit($search)) {
+                    $q->orWhere('employee_id', (int) $search);
+                }
             });
         }
 
@@ -159,19 +180,19 @@ class PeopleController extends Controller
 
         // Statistics for teachers only
         $totalTeachers = Employee::whereHas('position', function ($q) {
-            $q->where('position_name', 'like', '%teacher%');
+            $q->whereRaw('LOWER(position_name) LIKE ?', ['%teacher%']);
         })->count();
 
         $activeTeachers = Employee::whereHas('position', function ($q) {
-            $q->where('position_name', 'like', '%teacher%');
+            $q->whereRaw('LOWER(position_name) LIKE ?', ['%teacher%']);
         })->where('status', 1)->count();
 
         $inactiveTeachers = Employee::whereHas('position', function ($q) {
-            $q->where('position_name', 'like', '%teacher%');
+            $q->whereRaw('LOWER(position_name) LIKE ?', ['%teacher%']);
         })->where('status', 0)->count();
 
         $unassignedTeachers = Employee::whereHas('position', function ($q) {
-            $q->where('position_name', 'like', '%teacher%');
+            $q->whereRaw('LOWER(position_name) LIKE ?', ['%teacher%']);
         })->whereNull('department_id')->count();
 
         return view('admin.people.teachers', compact(
@@ -201,9 +222,17 @@ class PeopleController extends Controller
             });
         }
 
-        // Filter by student status: 1 = Active, 0 = Inactive
+        // Student registration uses text statuses, while older records may use 1/0.
         if ($request->filled('status')) {
-            $query->where('status', $request->input('status'));
+            $status = strtolower((string) $request->input('status'));
+
+            if (in_array($status, ['1', 'active'], true)) {
+                $query->whereIn('status', ['1', 'active']);
+            } elseif (in_array($status, ['0', 'inactive'], true)) {
+                $query->whereIn('status', ['0', 'inactive']);
+            } else {
+                $query->where('status', $status);
+            }
         }
 
         // Paginated student list
@@ -215,9 +244,9 @@ class PeopleController extends Controller
         // Student statistics
         $totalStudents = Student::count();
 
-        $activeStudents = Student::where('status', 1)->count();
+        $activeStudents = Student::whereIn('status', ['1', 'active'])->count();
 
-        $inactiveStudents = Student::where('status', 0)->count();
+        $inactiveStudents = Student::whereIn('status', ['0', 'inactive'])->count();
 
         $unassignedStudents = Student::whereDoesntHave('enrollments')->count();
 
@@ -228,5 +257,12 @@ class PeopleController extends Controller
             'inactiveStudents',
             'unassignedStudents'
         ));
+    }
+
+    public function showStudent(Student $student): View
+    {
+        $student->load('enrollments.class');
+
+        return view('admin.people.student-details', compact('student'));
     }
 }

@@ -60,7 +60,7 @@
     {{-- =========================================================
          ADMIN NAVIGATION
     ========================================================== --}}
-    @include('layouts.partials.admin-navbar')
+    @include('layouts.partials.admin-header')
 
 
     <div class="d-flex">
@@ -68,8 +68,9 @@
         {{-- =====================================================
              SIDEBAR
         ====================================================== --}}
-        @include('layouts.partials.admin-sidebar')
-
+        @include('layouts.partials.sidebar', [
+        'navigation' => 'admin'
+        ])
 
         {{-- =====================================================
              MAIN CONTENT

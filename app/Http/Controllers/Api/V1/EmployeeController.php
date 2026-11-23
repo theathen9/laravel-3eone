@@ -41,7 +41,7 @@ class EmployeeController extends Controller
     public function process(EmployeesRequest $request): JsonResponse
     {
         $data = $this->employeeService->create(
-            $request->validated()
+            $request->validated(),
         );
 
         return response()->json([

@@ -26,6 +26,7 @@ class User extends Authenticatable
     protected $fillable = [
         'reference_id',
         'reference_type',
+        'reference_code',
         'username',
         'email',
         'password',

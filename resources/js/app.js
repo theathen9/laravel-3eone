@@ -3,6 +3,11 @@
 import { apiFetch } from "./api";
 import "bootstrap";
 import { setupAddressAPI } from "./address";
+import { setupBranchManagement } from "./branch-management";
+import { setupRoomManagement } from "./room-management";
+import { setupPositionManagement } from "./position-management";
+import { setupEmployeeManagement } from "./employee-management";
+import { setupStudentManagement } from "./student-management";
 
 import Alpine from "alpinejs";
 
@@ -24,6 +29,12 @@ async function testApi() {
     }
 }
 document.addEventListener("DOMContentLoaded", () => {
+    setupBranchManagement();
+    setupRoomManagement();
+    setupPositionManagement();
+    setupEmployeeManagement();
+    setupStudentManagement();
+
     // Employee / Student birth address
     if (document.getElementById("birth_addr_province")) {
         setupAddressAPI("birth_addr");

@@ -39,6 +39,17 @@ class EmployeePositionHistory extends Model
         ];
     }
 
+    public function toArray(): array
+    {
+        $attributes = parent::toArray();
+
+        foreach (['start_date', 'end_date'] as $dateField) {
+            $attributes[$dateField] = $this->{$dateField}?->format('Y-m-d');
+        }
+
+        return $attributes;
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Relationships

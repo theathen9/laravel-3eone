@@ -8,6 +8,10 @@ use App\Http\Controllers\Api\V1\EmployeeController;
 use App\Http\Controllers\Api\V1\InvoiceController;
 use App\Http\Controllers\Api\V1\ClassController;
 use App\Http\Controllers\Api\V1\AddressController;
+use App\Http\Controllers\Api\V1\BranchController;
+use App\Http\Controllers\Api\V1\RoomController;
+use App\Http\Controllers\Api\V1\PositionController;
+use App\Http\Controllers\Api\V1\StudentController;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -70,14 +74,65 @@ Route::prefix('v1')->group(function () {
             UserController::class,
             'show',
         ]);
+
+        Route::get('/branches', [BranchController::class, 'index'])
+            ->name('api.v1.branches.index');
+        Route::post('/branches', [BranchController::class, 'process'])
+            ->name('api.v1.branches.store');
+        Route::get('/branches/{id}', [BranchController::class, 'show'])
+            ->name('api.v1.branches.show');
+        Route::put('/branches/{id}', [BranchController::class, 'update']);
+        Route::patch('/branches/{id}', [BranchController::class, 'update'])
+            ->name('api.v1.branches.update');
+        Route::delete('/branches/{id}', [BranchController::class, 'destroy']);
+
+        Route::get('/rooms', [RoomController::class, 'index'])
+            ->name('api.v1.rooms.index');
+        Route::post('/rooms', [RoomController::class, 'process'])
+            ->name('api.v1.rooms.store');
+        Route::get('/rooms/{id}', [RoomController::class, 'show'])
+            ->name('api.v1.rooms.show');
+        Route::put('/rooms/{id}', [RoomController::class, 'update']);
+        Route::patch('/rooms/{id}', [RoomController::class, 'update'])
+            ->name('api.v1.rooms.update');
+        Route::delete('/rooms/{id}', [RoomController::class, 'destroy'])
+            ->name('api.v1.rooms.destroy');
+
+        Route::get('/positions', [PositionController::class, 'index'])
+            ->name('api.v1.positions.index');
+        Route::post('/positions', [PositionController::class, 'process'])
+            ->name('api.v1.positions.store');
+        Route::get('/positions/{id}', [PositionController::class, 'show'])
+            ->name('api.v1.positions.show');
+        Route::put('/positions/{id}', [PositionController::class, 'update']);
+        Route::patch('/positions/{id}', [PositionController::class, 'update'])
+            ->name('api.v1.positions.update');
+        Route::delete('/positions/{id}', [PositionController::class, 'destroy'])
+            ->name('api.v1.positions.destroy');
+
         /* |-------------------------------------------------------------------------- 
         | Student Registration 
         |-------------------------------------------------------------------------- */
-        Route::get('/employees', [EmployeeController::class, 'index']);
-        Route::post('/employees', [EmployeeController::class, 'process']);
-        Route::get('/employees/{id}', [EmployeeController::class, 'show']);
+        Route::get('/employees', [EmployeeController::class, 'index'])
+            ->name('api.v1.employees.index');
+        Route::post('/employees', [EmployeeController::class, 'process'])
+            ->name('api.v1.employees.store');
+        Route::get('/employees/{id}', [EmployeeController::class, 'show'])
+            ->name('api.v1.employees.show');
         Route::put('/employees/{id}', [EmployeeController::class, 'update']);
-        Route::delete('/employees/{id}', [EmployeeController::class, 'destroy']);
+        Route::patch('/employees/{id}', [EmployeeController::class, 'update'])
+            ->name('api.v1.employees.update');
+        Route::delete('/employees/{id}', [EmployeeController::class, 'destroy'])
+            ->name('api.v1.employees.destroy');
+
+        Route::get('/students', [StudentController::class, 'index'])
+            ->name('api.v1.students.index');
+        Route::get('/students/{id}', [StudentController::class, 'show'])
+            ->name('api.v1.students.show');
+        Route::patch('/students/{id}', [StudentController::class, 'update'])
+            ->name('api.v1.students.update');
+        Route::delete('/students/{id}', [StudentController::class, 'destroy'])
+            ->name('api.v1.students.destroy');
 
 
         /* |-------------------------------------------------------------------------- 

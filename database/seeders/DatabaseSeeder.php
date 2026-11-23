@@ -30,8 +30,10 @@ class DatabaseSeeder extends Seeder
             [
                 'branch_code' => 'BR001',
                 'branch_name' => '3E ONE Main Campus',
-                'phone1' => '063 760 123',
-                'phone2' => '012 345 678',
+                'phones' => [
+                    ['number' => '+855 63 760 123', 'label' => 'Main'],
+                    ['number' => '+855 12 345 678', 'label' => 'Alternate'],
+                ],
                 'email' => 'main@empowermentacademy.com',
                 'address' => '36, Siem Reap, Siem Reap, Cambodia',
                 'location' => 'Siem Reap',
@@ -40,8 +42,10 @@ class DatabaseSeeder extends Seeder
             [
                 'branch_code' => 'BR002',
                 'branch_name' => '3E ONE Phnom Penh',
-                'phone1' => '023 555 123',
-                'phone2' => '097 555 1234',
+                'phones' => [
+                    ['number' => '+855 23 555 123', 'label' => 'Main'],
+                    ['number' => '+855 97 555 1234', 'label' => 'Alternate'],
+                ],
                 'email' => 'phnompenh@empowermentacademy.com',
                 'address' => 'Phnom Penh, Cambodia',
                 'location' => 'Phnom Penh',
@@ -50,8 +54,10 @@ class DatabaseSeeder extends Seeder
             [
                 'branch_code' => 'BR003',
                 'branch_name' => '3E ONE Battambang',
-                'phone1' => '053 777 123',
-                'phone2' => '092 777 123',
+                'phones' => [
+                    ['number' => '+855 53 777 123', 'label' => 'Main'],
+                    ['number' => '+855 92 777 123', 'label' => 'Alternate'],
+                ],
                 'email' => 'battambang@empowermentacademy.com',
                 'address' => 'Battambang, Cambodia',
                 'location' => 'Battambang',
@@ -60,8 +66,10 @@ class DatabaseSeeder extends Seeder
             [
                 'branch_code' => 'BR004',
                 'branch_name' => '3E ONE Kampong Cham',
-                'phone1' => '042 888 123',
-                'phone2' => '095 888 123',
+                'phones' => [
+                    ['number' => '+855 42 888 123', 'label' => 'Main'],
+                    ['number' => '+855 95 888 123', 'label' => 'Alternate'],
+                ],
                 'email' => 'kampongcham@empowermentacademy.com',
                 'address' => 'Kampong Cham, Cambodia',
                 'location' => 'Kampong Cham',
@@ -70,8 +78,10 @@ class DatabaseSeeder extends Seeder
             [
                 'branch_code' => 'BR005',
                 'branch_name' => '3E ONE Siem Reap West',
-                'phone1' => '063 890 123',
-                'phone2' => '088 890 123',
+                'phones' => [
+                    ['number' => '+855 63 890 123', 'label' => 'Main'],
+                    ['number' => '+855 88 890 123', 'label' => 'Alternate'],
+                ],
                 'email' => 'west@empowermentacademy.com',
                 'address' => 'Siem Reap, Cambodia',
                 'location' => 'Siem Reap',
@@ -80,8 +90,9 @@ class DatabaseSeeder extends Seeder
             [
                 'branch_code' => 'BR006',
                 'branch_name' => '3E ONE Training Center',
-                'phone1' => '063 900 123',
-                'phone2' => null,
+                'phones' => [
+                    ['number' => '+855 63 900 123', 'label' => 'Main'],
+                ],
                 'email' => 'training@empowermentacademy.com',
                 'address' => 'Siem Reap, Cambodia',
                 'location' => 'Siem Reap',
@@ -90,8 +101,9 @@ class DatabaseSeeder extends Seeder
             [
                 'branch_code' => 'BR007',
                 'branch_name' => '3E ONE Old Campus',
-                'phone1' => '063 700 123',
-                'phone2' => null,
+                'phones' => [
+                    ['number' => '+855 63 700 123', 'label' => 'Main'],
+                ],
                 'email' => 'oldcampus@empowermentacademy.com',
                 'address' => 'Siem Reap, Cambodia',
                 'location' => 'Siem Reap',

@@ -23,6 +23,8 @@ class Employee extends Model
 
     protected $fillable = [
         'employee_id',
+        'employee_code',
+        'branch_id',
         'department_id',
         'position_id',
 
@@ -49,6 +51,7 @@ class Employee extends Model
         'email',
 
         'profile_image',
+        'signature_image',
 
         'hired_at',
         'status',
@@ -73,6 +76,15 @@ class Employee extends Model
         );
     }
 
+    public function branchHistories(): HasMany
+    {
+        return $this->hasMany(
+            EmployeeBranchHistory::class,
+            'employee_id',
+            'employee_id'
+        );
+    }
+
     public function subjects(): HasMany
     {
         return $this->hasMany(
@@ -88,6 +100,15 @@ class Employee extends Model
             Department::class,
             'department_id',
             'department_id'
+        );
+    }
+
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(
+            Branch::class,
+            'branch_id',
+            'branch_id'
         );
     }
 

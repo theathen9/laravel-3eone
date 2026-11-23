@@ -77,7 +77,6 @@ $email = "user" . rand(1000, 9999) . "@gmail.com";
             @csrf
 
             <input type="hidden" name="employee_id" value="{{ $idCodeStaff }}">
-            <input type="hidden" name="position_id" value="1">
 
             {{-- ================= STAFF INFORMATION ================= --}}
             <h3 class="mb-4">Staff Information</h3>
@@ -184,6 +183,18 @@ $email = "user" . rand(1000, 9999) . "@gmail.com";
 
             </div>
 
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <label for="signature_image" class="form-label">Employee signature image</label>
+                    <input type="file"
+                        name="signature_image"
+                        id="signature_image"
+                        accept="image/jpeg,image/png,image/webp"
+                        class="form-control">
+                    <div class="form-text">Upload a handwritten signature image (PNG recommended).</div>
+                </div>
+            </div>
+
             {{-- ================= BASIC INFORMATION ================= --}}
             <div class="row g-3 mb-5">
 
@@ -210,12 +221,12 @@ $email = "user" . rand(1000, 9999) . "@gmail.com";
                 </div>
 
                 <div class="col-lg-3">
-                    <select name="position"
-                        id="position"
+                    <select name="position_id"
+                        id="position_id"
                         class="form-select"
                         required>
 
-                        <option value="">-- position --</option>
+                        <option value="">-- Select position --</option>
                         @foreach ($positions ?? [] as $position)
 
                         <option value="{{ $position['position_id'] }}">
@@ -227,6 +238,23 @@ $email = "user" . rand(1000, 9999) . "@gmail.com";
                     </select>
 
 
+                </div>
+
+                <div class="col-lg-3">
+                    <select name="branch_id"
+                        id="branch_id"
+                        class="form-select"
+                        required>
+
+                        <option value="">-- Select branch --</option>
+                        @foreach ($branches ?? [] as $branch)
+                        <option value="{{ $branch->branch_id }}">
+                            {{ $branch->branch_name }} ({{ $branch->branch_code }})
+                        </option>
+                        @endforeach
+
+                    </select>
+                    <div class="form-text">A branch employee ID is generated automatically after registration.</div>
                 </div>
 
                 <div class="col-lg-3">

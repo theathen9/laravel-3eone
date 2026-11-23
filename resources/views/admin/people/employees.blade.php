@@ -144,14 +144,14 @@
             </div>
 
             @if (isset($employees) && method_exists($employees, 'total'))
-            <span class="inline-flex w-fit items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
+            <span id="employeeResultCount" class="inline-flex w-fit items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
                 {{ number_format($employees->total()) }} records
             </span>
             @endif
         </div>
 
         {{-- Search Toolbar --}}
-        <form action="{{ url()->current() }}" method="GET"
+        <form id="employeeSearchForm" action="{{ url()->current() }}" method="GET"
             class="flex flex-col gap-3 border-b border-gray-200 bg-gray-50/70 p-4 lg:flex-row lg:items-center">
 
             <div class="relative min-w-0 flex-1">
@@ -164,20 +164,21 @@
 
                 <input
                     type="search"
+                    id="employeeSearchInput"
                     name="search"
                     value="{{ request('search') }}"
-                    placeholder="Search name, employee code, or email..."
+                    placeholder="Search employee ID, branch employee code, name, branch code, or email..."
                     class="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-3 text-sm text-gray-700 placeholder:text-gray-400 focus:border-[#d1935c] focus:outline-none focus:ring-2 focus:ring-[#d1935c]/20">
             </div>
 
             <div class="flex flex-col gap-3 sm:flex-row">
-                <select name="status"
+                <select id="employeeStatusFilter" name="status"
                     class="min-w-0 rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-[#d1935c] focus:outline-none focus:ring-2 focus:ring-[#d1935c]/20">
                     <option value="">All statuses</option>
-                    <option value="active" @selected(request('status')==='active' )>
+                    <option value="1" @selected(in_array((string) request('status'), ['1', 'active' ], true))>
                         Active
                     </option>
-                    <option value="inactive" @selected(request('status')==='inactive' )>
+                    <option value="0" @selected(in_array((string) request('status'), ['0', 'inactive' ], true))>
                         Inactive
                     </option>
                 </select>
@@ -192,206 +193,339 @@
                     Search
                 </button>
 
-                <a href="{{ url()->current() }}"
+                <a id="employeeSearchReset" href="{{ url()->current() }}"
                     class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-gray-100">
                     Reset
                 </a>
             </div>
         </form>
 
-        {{-- Employee Table --}}
-        <div class="overflow-x-auto">
-            <table class="w-full min-w-[850px] table-auto text-left">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="w-[26%] px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">
-                            Employee
-                        </th>
-                        <th class="w-[15%] px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">
-                            Code
-                        </th>
-                        <th class="w-[16%] px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">
-                            Position
-                        </th>
-                        <th class="w-[21%] px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">
-                            Contact
-                        </th>
-                        <th class="w-[11%] px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">
-                            Status
-                        </th>
-                        <th class="w-[11%] px-5 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">
-                            Actions
-                        </th>
-                    </tr>
-                </thead>
+        <div id="employeeResults" aria-live="polite">
+            {{-- Employee Table --}}
+            <div class="overflow-x-auto">
+                <table class="w-full min-w-[1200px] table-auto text-left">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="w-[21%] px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                Employee
+                            </th>
+                            <th class="w-[8%] px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                Employee ID
+                            </th>
 
-                <tbody class="divide-y divide-gray-100">
-                    @forelse ($employees ?? [] as $employee)
-                    @php
-                    $fullName = trim(
-                    ($employee->first_name_en ?? '') . ' ' .
-                    ($employee->last_name_en ?? '')
-                    );
+                            <th class="w-[12%] px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                Position
+                            </th>
+                            <th class="w-[17%] px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                Contact
+                            </th>
+                            <th class="w-[8%] px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                Status
+                            </th>
+                            <th class="w-[13%] px-5 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
 
-                    $isActive = in_array(
-                    strtolower((string) ($employee->status ?? '')),
-                    ['active', '1'],
-                    true
-                    );
-                    @endphp
+                    <tbody class="divide-y divide-gray-100">
+                        @forelse ($employees ?? [] as $employee)
+                        @php
+                        $fullName = trim(
+                        ($employee->first_name_en ?? '') . ' ' .
+                        ($employee->last_name_en ?? '')
+                        );
 
-                    <tr class="transition-colors hover:bg-orange-50/40">
+                        $isActive = in_array(
+                        strtolower((string) ($employee->status ?? '')),
+                        ['active', '1'],
+                        true
+                        );
+                        @endphp
 
-                        {{-- Employee profile --}}
-                        <td class="px-5 py-4">
-                            <div class="flex min-w-0 items-center gap-3">
-                                {{-- Employee Profile Image --}}
-                                <div class="h-18 w-18 shrink-0 overflow-hidden rounded-full border-2 border-orange-100 bg-orange-50">
-                                    @if (!empty($employee->profile_image))
-                                    <img
-                                        src="{{ asset('storage/' . $employee->profile_image) }}"
-                                        alt="{{ $fullName ?: 'Employee' }}"
-                                        class="block h-full w-full object-cover"
-                                        loading="lazy">
-                                    @else
-                                    <div class="flex h-full w-full items-center justify-center text-lg font-bold text-[#b87d49]">
-                                        {{ strtoupper(substr($fullName ?: 'E', 0, 1)) }}
+                        <tr class="transition-colors hover:bg-orange-50/40">
+
+                            {{-- Employee profile --}}
+                            <td class="px-5 py-4">
+                                <div class="flex min-w-0 items-center gap-3">
+                                    {{-- Employee Profile Image --}}
+                                    <div class="h-18 w-18 shrink-0 overflow-hidden rounded-full border-2 border-orange-100 bg-orange-50">
+                                        @if (!empty($employee->profile_image))
+                                        <img
+                                            src="{{ asset('storage/' . $employee->profile_image) }}"
+                                            alt="{{ $fullName ?: 'Employee' }}"
+                                            class="block h-full w-full object-cover"
+                                            loading="lazy">
+                                        @else
+                                        <div class="flex h-full w-full items-center justify-center text-lg font-bold text-[#b87d49]">
+                                            {{ strtoupper(substr($fullName ?: 'E', 0, 1)) }}
+                                        </div>
+                                        @endif
                                     </div>
-                                    @endif
+
+                                    {{-- Employee Name --}}
+                                    <div class="min-w-0">
+                                        <p class="truncate text-sm font-semibold text-gray-900">
+                                            {{ $fullName ?: 'Unnamed Employee' }}
+                                        </p>
+
+                                        @if (!empty($employee->first_name_kh) || !empty($employee->last_name_kh))
+                                        <p class="mt-1 truncate text-xs text-gray-500">
+                                            {{ trim(($employee->first_name_kh ?? '') . ' ' . ($employee->last_name_kh ?? '')) }}
+                                        </p>
+                                        @endif
+                                    </div>
                                 </div>
+                            </td>
 
-                                {{-- Employee Name --}}
-                                <div class="min-w-0">
-                                    <p class="truncate text-sm font-semibold text-gray-900">
-                                        {{ $fullName ?: 'Unnamed Employee' }}
-                                    </p>
+                            {{-- Branch-based employee code --}}
+                            <td class="whitespace-nowrap px-4 py-4 font-mono text-sm font-medium text-[#b87d49]">
+                                {{ $employee->employee_code ?: '—' }}
+                            </td>
 
-                                    @if (!empty($employee->first_name_kh) || !empty($employee->last_name_kh))
-                                    <p class="mt-1 truncate text-xs text-gray-500">
-                                        {{ trim(($employee->first_name_kh ?? '') . ' ' . ($employee->last_name_kh ?? '')) }}
-                                    </p>
-                                    @endif
+
+
+                            {{-- Position --}}
+                            <td class="px-4 py-4 text-sm text-gray-700">
+                                {{ $employee->position->position_name ?? 'Not assigned' }}
+                            </td>
+
+                            {{-- Contact --}}
+                            <td class="px-4 py-4">
+                                <p class="break-words text-sm text-gray-700">
+                                    {{ $employee->email ?: '—' }}
+                                </p>
+                                <p class="mt-1 text-xs text-gray-500">
+                                    {{ $employee->phone1 ?: 'No phone number' }}
+                                </p>
+                            </td>
+
+                            {{-- Status --}}
+                            <td class="px-4 py-4">
+                                <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold {{ $isActive ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-600' }}">
+                                    <span class="h-1.5 w-1.5 rounded-full {{ $isActive ? 'bg-green-500' : 'bg-gray-400' }}"></span>
+                                    {{ $isActive ? 'Active' : 'Inactive' }}
+                                </span>
+                            </td>
+
+
+
+                            {{-- Actions --}}
+                            <td class="px-5 py-4">
+                                <div class="flex items-center justify-end gap-2">
+                                    <button type="button"
+                                        class="employee-detail inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
+                                        data-endpoint="{{ route('api.v1.employees.show', $employee->employee_id) }}"
+                                        title="View employee"
+                                        aria-label="View employee">
+                                        <svg class="h-4 w-4" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M2.25 12s3.5-7 9.75-7 9.75 7 9.75 7-3.5 7-9.75 7-9.75-7-9.75-7Z" />
+                                            <circle cx="12" cy="12" r="3" />
+                                        </svg>
+                                    </button>
+
+                                    <button type="button"
+                                        class="employee-edit inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-600 transition hover:border-orange-200 hover:bg-orange-50 hover:text-[#b87d49]"
+                                        data-endpoint="{{ route('api.v1.employees.show', $employee->employee_id) }}"
+                                        data-positions-endpoint="{{ route('api.v1.positions.index', ['limit' => 100]) }}"
+                                        data-branches-endpoint="{{ route('api.v1.branches.index', ['limit' => 100]) }}"
+                                        title="Edit employee"
+                                        aria-label="Edit employee">
+                                        <svg class="h-4 w-4" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="m16.862 4.487 2.651 2.651M4 20l4.5-1 11-11a2.121 2.121 0 0 0-3-3l-11 11L4 20Z" />
+                                        </svg>
+                                    </button>
+
+                                    <button type="button"
+                                        class="employee-delete inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                                        data-endpoint="{{ route('api.v1.employees.destroy', $employee->employee_id) }}"
+                                        data-employee-name="{{ $fullName ?: 'Employee #' . $employee->employee_id }}"
+                                        title="Delete employee"
+                                        aria-label="Delete employee">
+                                        <svg class="h-4 w-4" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v5M14 11v5" />
+                                        </svg>
+                                    </button>
                                 </div>
-                            </div>
-                        </td>
-
-                        {{-- Employee code --}}
-                        <td class="px-4 py-4 text-sm text-gray-600">
-                            {{ $employee->employee_code ?: '—' }}
-                        </td>
-
-                        {{-- Position --}}
-                        <td class="px-4 py-4 text-sm text-gray-700">
-                            {{ $employee->position->position_name ?? 'Not assigned' }}
-                        </td>
-
-                        {{-- Contact --}}
-                        <td class="px-4 py-4">
-                            <p class="break-words text-sm text-gray-700">
-                                {{ $employee->email ?: '—' }}
-                            </p>
-                            <p class="mt-1 text-xs text-gray-500">
-                                {{ $employee->phone ?: 'No phone number' }}
-                            </p>
-                        </td>
-
-                        {{-- Status --}}
-                        <td class="px-4 py-4">
-                            <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold {{ $isActive ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-600' }}">
-                                <span class="h-1.5 w-1.5 rounded-full {{ $isActive ? 'bg-green-500' : 'bg-gray-400' }}"></span>
-                                {{ $isActive ? 'Active' : 'Inactive' }}
-                            </span>
-                        </td>
-
-
-
-                        {{-- Actions --}}
-                        <td class="px-5 py-4">
-                            <div class="flex items-center justify-end gap-2">
-                                @if (Route::has('admin.employees.show'))
-                                <a href="{{ route('admin.employees.show', $employee->employee_id) }}"
-                                    title="View employee"
-                                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600">
-                                    <svg class="h-4 w-4" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="8" class="px-5 py-16 text-center">
+                                <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-400">
+                                    <svg class="h-6 w-6" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                                         <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M2.25 12s3.5-7 9.75-7 9.75 7 9.75 7-3.5 7-9.75 7-9.75-7-9.75-7Z" />
-                                        <circle cx="12" cy="12" r="3" />
+                                            d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2m6-10a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />
                                     </svg>
+                                </div>
+                                <h3 class="mt-3 text-sm font-semibold text-gray-900">
+                                    No employees found
+                                </h3>
+                                <p class="mt-1 text-sm text-gray-500">
+                                    Try changing your search or status filter.
+                                </p>
+                                @if (request()->hasAny(['search', 'status']))
+                                <a id="employeeClearFilters" href="{{ url()->current() }}"
+                                    class="mt-3 inline-flex text-sm font-semibold text-[#b87d49] hover:underline">
+                                    Clear filters
                                 </a>
                                 @endif
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
 
-                                @if (Route::has('admin.employees.edit'))
-                                <a href="{{ route('admin.employees.edit', $employee->employee_id) }}"
-                                    title="Edit employee"
-                                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-600 transition hover:border-orange-200 hover:bg-orange-50 hover:text-[#b87d49]">
-                                    <svg class="h-4 w-4" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="m16.862 4.487 2.651 2.651M4 20l4.5-1 11-11a2.121 2.121 0 0 0-3-3l-11 11L4 20Z" />
-                                    </svg>
-                                </a>
-                                @endif
+            {{-- Pagination --}}
+            @if (isset($employees) && method_exists($employees, 'links'))
+            <div class="border-t border-gray-200 px-5 py-4">
+                {{ $employees->withQueryString()->links() }}
+            </div>
+            @endif
 
-                                @if (!Route::has('admin.employees.show') && !Route::has('admin.employees.edit'))
-                                <button
-                                    type="button"
-                                    disabled
-                                    title="View and edit actions are not configured yet"
-                                    class="inline-flex cursor-not-allowed items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs font-medium text-gray-400">
-                                    <svg
-                                        class="h-4 w-4"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                        stroke-width="1.8">
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            d="M12 5v14m-7-7h14" />
-                                    </svg>
-                                    No actions
-                                </button>
-                                @endif
-                            </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="6" class="px-5 py-16 text-center">
-                            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-400">
-                                <svg class="h-6 w-6" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2m6-10a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />
-                                </svg>
-                            </div>
-                            <h3 class="mt-3 text-sm font-semibold text-gray-900">
-                                No employees found
-                            </h3>
-                            <p class="mt-1 text-sm text-gray-500">
-                                Try changing your search or status filter.
-                            </p>
-                            @if (request()->hasAny(['search', 'status']))
-                            <a href="{{ url()->current() }}"
-                                class="mt-3 inline-flex text-sm font-semibold text-[#b87d49] hover:underline">
-                                Clear filters
-                            </a>
-                            @endif
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
         </div>
-
-        {{-- Pagination --}}
-        @if (isset($employees) && method_exists($employees, 'links'))
-        <div class="border-t border-gray-200 px-5 py-4">
-            {{ $employees->withQueryString()->links() }}
-        </div>
-        @endif
-
     </div>
 </div>
+
+@include('admin.people.partials.employee-modals')
+
+@push('scripts')
+<script>
+    const employeeSearchForm = document.getElementById('employeeSearchForm');
+    const employeeSearchInput = document.getElementById('employeeSearchInput');
+    const employeeStatusFilter = document.getElementById('employeeStatusFilter');
+    const employeeSearchReset = document.getElementById('employeeSearchReset');
+    const employeeResults = document.getElementById('employeeResults');
+    const employeeResultCount = document.getElementById('employeeResultCount');
+    const employeeSearchMessage = document.createElement('p');
+    employeeSearchMessage.className = 'hidden px-4 py-2 text-sm text-red-600';
+    employeeSearchMessage.setAttribute('role', 'status');
+    employeeSearchMessage.setAttribute('aria-live', 'polite');
+    employeeSearchForm.insertAdjacentElement('afterend', employeeSearchMessage);
+    let employeeSearchTimeout;
+    let activeEmployeeSearch;
+
+    async function loadEmployees(url, historyMode = 'replace') {
+        if (activeEmployeeSearch) {
+            activeEmployeeSearch.abort();
+        }
+
+        const controller = new AbortController();
+        activeEmployeeSearch = controller;
+        employeeResults.setAttribute('aria-busy', 'true');
+        employeeSearchMessage.classList.add('hidden');
+
+        try {
+            const response = await fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                signal: controller.signal,
+            });
+
+            if (!response.ok) {
+                throw new Error(`Employee search failed (${response.status}).`);
+            }
+
+            const responseDocument = new DOMParser().parseFromString(await response.text(), 'text/html');
+            const updatedResults = responseDocument.getElementById('employeeResults');
+            const updatedResultCount = responseDocument.getElementById('employeeResultCount');
+            if (!updatedResults || !updatedResultCount) {
+                throw new Error('Employee search response did not contain results.');
+            }
+
+            employeeResults.innerHTML = updatedResults.innerHTML;
+            employeeResultCount.textContent = updatedResultCount.textContent;
+            if (historyMode === 'push') {
+                window.history.pushState({}, '', url.toString());
+            } else if (historyMode === 'replace') {
+                window.history.replaceState({}, '', url.toString());
+            }
+        } catch (error) {
+            if (error.name === 'AbortError') {
+                return;
+            }
+
+            console.error('Could not load employee search results:', error);
+            employeeSearchMessage.textContent = 'Could not load employees. Please try again.';
+            employeeSearchMessage.classList.remove('hidden');
+        } finally {
+            if (activeEmployeeSearch === controller) {
+                activeEmployeeSearch = null;
+                employeeResults.removeAttribute('aria-busy');
+            }
+        }
+    }
+
+    function searchEmployees() {
+        const url = new URL(employeeSearchForm.action, window.location.href);
+        const params = new URLSearchParams(new FormData(employeeSearchForm));
+        if (!employeeSearchInput.value.trim()) {
+            params.delete('search');
+        }
+        if (!employeeStatusFilter.value) {
+            params.delete('status');
+        }
+        url.search = params.toString();
+        loadEmployees(url);
+    }
+
+    employeeSearchForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        window.clearTimeout(employeeSearchTimeout);
+        searchEmployees();
+    });
+
+    employeeSearchInput.addEventListener('input', () => {
+        window.clearTimeout(employeeSearchTimeout);
+        employeeSearchTimeout = window.setTimeout(searchEmployees, 400);
+    });
+
+    employeeStatusFilter.addEventListener('change', () => {
+        window.clearTimeout(employeeSearchTimeout);
+        searchEmployees();
+    });
+
+    employeeSearchReset.addEventListener('click', (event) => {
+        event.preventDefault();
+        window.clearTimeout(employeeSearchTimeout);
+        employeeSearchInput.value = '';
+        employeeStatusFilter.value = '';
+        searchEmployees();
+    });
+
+    employeeResults.addEventListener('click', (event) => {
+        const paginationLink = event.target.closest('a');
+        if (!paginationLink || !employeeResults.contains(paginationLink)) {
+            return;
+        }
+
+        if (paginationLink.id === 'employeeClearFilters') {
+            event.preventDefault();
+            employeeSearchInput.value = '';
+            employeeStatusFilter.value = '';
+            loadEmployees(paginationLink.href);
+        } else {
+            event.preventDefault();
+            loadEmployees(paginationLink.href, 'push');
+        }
+    });
+
+    window.addEventListener('popstate', () => {
+        const url = new URL(window.location.href);
+        employeeSearchInput.value = url.searchParams.get('search') || '';
+        employeeStatusFilter.value = url.searchParams.get('status') || '';
+        loadEmployees(url, 'none');
+    });
+</script>
+@endpush
+
 @endsection

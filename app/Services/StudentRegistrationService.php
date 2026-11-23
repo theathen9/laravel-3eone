@@ -40,11 +40,7 @@ class StudentRegistrationService
 
     protected function generateStudentId(): int
     {
-        return (int) (
-            Student::where('status', 'active')
-            ->whereNotNull('student_id')
-            ->max('student_id') ?? 0
-        ) + 1;
+        return $this->findId();
     }
 
     protected function findId(): int
@@ -419,11 +415,8 @@ class StudentRegistrationService
         /*
          * Registration is now complete.
          */
-        $studentId = $this->generateStudentId();
-
-        $student->student_id = $studentId;
         $student->student_code = 'STU-' .
-            str_pad($studentId, 2, '0', STR_PAD_LEFT);
+            str_pad((string) $student->student_id, 2, '0', STR_PAD_LEFT);
 
         $student->status = 'active';
         $student->save();

@@ -140,7 +140,7 @@ class EmployeesSeeder extends Seeder
 
                 'phone1' => '012345678',
                 'phone2' => '098765432',
-                'email' => 'dara.sok@example.com',
+                'email' => 'dara.sok@gmail.com',
 
                 'profile_image' => null,
                 'hired_at' => '2015-01-10',
@@ -172,7 +172,7 @@ class EmployeesSeeder extends Seeder
 
                 'phone1' => '011222333',
                 'phone2' => null,
-                'email' => 'sreyneat.chan@example.com',
+                'email' => 'sreyneat.chan@gmail.com',
 
                 'profile_image' => null,
                 'hired_at' => '2018-04-01',
@@ -204,7 +204,7 @@ class EmployeesSeeder extends Seeder
 
                 'phone1' => '010333444',
                 'phone2' => null,
-                'email' => 'visal.heng@example.com',
+                'email' => 'visal.heng@gmail.com',
 
                 'profile_image' => null,
                 'hired_at' => '2017-08-15',
@@ -236,7 +236,7 @@ class EmployeesSeeder extends Seeder
 
                 'phone1' => '015444555',
                 'phone2' => null,
-                'email' => 'rattana.sok@example.com',
+                'email' => 'rattana.sok@gmail.com',
 
                 'profile_image' => null,
                 'hired_at' => '2020-01-05',
@@ -268,7 +268,7 @@ class EmployeesSeeder extends Seeder
 
                 'phone1' => '017555666',
                 'phone2' => null,
-                'email' => 'sovann.ly@example.com',
+                'email' => 'sovann.ly@gmail.com',
 
                 'profile_image' => null,
                 'hired_at' => '2021-06-01',
@@ -300,7 +300,7 @@ class EmployeesSeeder extends Seeder
 
                 'phone1' => '016666777',
                 'phone2' => null,
-                'email' => 'maly.keo@example.com',
+                'email' => 'maly.keo@gmail.com',
 
                 'profile_image' => null,
                 'hired_at' => '2019-03-20',

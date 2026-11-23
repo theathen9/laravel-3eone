@@ -11,6 +11,15 @@ class EmployeesRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('position')) {
+            $this->merge([
+                'position_id' => $this->input('position'),
+            ]);
+        }
+    }
+
     public function rules(): array
     {
         return [
@@ -77,9 +86,16 @@ class EmployeesRequest extends FormRequest
             ],
 
             'position_id' => [
-                'required',
-                'string',
-                'max:20',
+                'nullable',
+                'integer',
+                'exists:tblPositions,position_id',
+            ],
+
+            'branch_id' => [
+                $this->isMethod('post') ? 'required' : 'sometimes',
+                'nullable',
+                'integer',
+                'exists:tblBranches,branch_id',
             ],
 
             'birth_addr_province' => ['nullable', 'string', 'max:100'],
@@ -102,6 +118,12 @@ class EmployeesRequest extends FormRequest
                 'mimes:jpg,jpeg,png,webp',
                 'max:2048',
             ],
+            'signature_image' => [
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'max:2048',
+            ],
 
             'created_by' => [
                 'nullable',
@@ -109,7 +131,10 @@ class EmployeesRequest extends FormRequest
                 'max:100',
             ],
 
-
+            'status' => [
+                'sometimes',
+                'boolean',
+            ],
         ];
     }
 }

@@ -1,8 +1,8 @@
-{{-- resources/views/layouts/partials/account-navbar.blade.php --}}
+{{-- resources/views/layouts/partials/account-header.blade.php --}}
 
-<nav
+<header
     class="navbar navbar-expand-lg bg-white border-bottom shadow-sm sticky-top"
-    id="account-navbar">
+    id="account-header">
     <div class="container-fluid px-3 px-lg-4">
 
         {{-- Sidebar Toggle --}}
@@ -16,7 +16,7 @@
         {{-- Brand --}}
         <div class="me-6 me-lg-3 d-flex align-items-center">
             <a
-                href="{{ url('/admin/dashboard') }}"
+                href="{{ url('/account/dashboard') }}"
                 class="navbar-brand d-flex align-items-center gap-2">
 
                 <img
@@ -32,7 +32,7 @@
                     </div>
 
                     <small class="text-muted">
-                        Administration
+                        accountistration
                     </small>
                 </div>
 
@@ -196,7 +196,7 @@
                                 </div>
 
                                 <div class="text-muted small">
-                                    {{ $user?->role?->role_name ?? 'Admin' }}
+                                    {{ $user?->role?->role_name ?? 'account' }}
                                 </div>
 
                             </div>
@@ -217,7 +217,7 @@
                             <li>
                                 <a
                                     class="dropdown-item"
-                                    href="{{ url('/admin/profile') }}">
+                                    href="{{ url('/account/profile') }}">
                                     <i class="bi bi-person me-2"></i>
                                     My Profile
                                 </a>
@@ -228,7 +228,7 @@
                             <li>
                                 <a
                                     class="dropdown-item"
-                                    href="{{ url('/admin/settings') }}">
+                                    href="{{ url('/account/settings') }}">
                                     <i class="bi bi-gear me-2"></i>
                                     Settings
                                 </a>
@@ -263,4 +263,4 @@
             </div>
         </div>
     </div>
-</nav>
+</header>

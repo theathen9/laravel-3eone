@@ -1,266 +1,200 @@
 {{-- resources/views/layouts/partials/admin-navbar.blade.php --}}
 
-<nav
-    class="navbar navbar-expand-lg bg-white border-bottom shadow-sm sticky-top"
-    id="admin-navbar">
-    <div class="container-fluid px-3 px-lg-4">
+<aside id="admin-navbar" class="bg-white border-end z-1">
+    <div class="navbar-inner">
+        @foreach ($navbarSections as $section)
+        <div class="navbar-section">
+            <div class="sidebar-heading">
+                {{ $section['title'] }}
+            </div>
 
-        {{-- Sidebar Toggle --}}
-        <button
-            class="btn btn-outline-secondary d-lg-none me-2"
-            type="button"
-            id="sidebarToggle"
-            aria-label="Toggle sidebar">
-            <i class="bi bi-list fs-5"></i>
-        </button>
-        {{-- Brand --}}
-        <div class="me-6 me-lg-3 d-flex align-items-center">
+            @foreach ($section['items'] as $item)
+            @php
+            $routePattern = $item['route'] ?? null;
+
+            $isActive = $routePattern
+            && request()->routeIs($routePattern);
+            @endphp
+
             <a
-                href="{{ url('/admin/dashboard') }}"
-                class="navbar-brand d-flex align-items-center gap-2">
-
-                <img
-                    src="{{ asset('images/icon.webp') }}"
-                    alt="3EONE"
-                    width="38"
-                    height="38"
-                    class="rounded">
-
-                <div class="d-none d-sm-block">
-                    <div class="fw-bold lh-1">
-                        3EONE
-                    </div>
-
-                    <small class="text-muted">
-                        Administration
-                    </small>
-                </div>
-
+                href="{{ url($item['url']) }}"
+                class="sidebar-link {{ $isActive ? 'active' : '' }}"
+                @if ($isActive) aria-current="page" @endif>
+                <i class="bi {{ $item['icon'] }}"></i>
+                <span>{{ $item['label'] }}</span>
             </a>
+            @endforeach
         </div>
-        <div class="d-flex justify-content-between align-items-center flex-grow-1 ms-3">
-            <div class="d-flex w-50" style="height: 45px">
-
-                {{-- Search --}}
-                <form
-                    class="d-flex mx-lg-4 my-3 my-lg-0 flex-grow-1 hiegth"
-                    role="search"
-                    action="{{ url()->current() }}"
-                    method="GET">
-                    <div class="input-group">
-
-                        <span class="input-group-text bg-light">
-                            <i class="bi bi-search"></i>
-                        </span>
-
-                        <input
-                            type="search"
-                            name="q"
-                            class="form-control bg-light border-start-0"
-                            placeholder="Search..."
-                            value="{{ request('q') }}"
-                            autocomplete="off">
-
-                    </div>
-                </form>
-            </div>
-            <div class="d-flex align-items-center ">
-                <div>
-                    {{-- Right Side --}}
-                    <ul class="navbar-nav ms-auto align-items-lg-center">
-
-                        {{-- Notifications --}}
-                        <li class="nav-item dropdown">
-
-                            <a
-                                href="#"
-                                class="nav-link position-relative px-3"
-                                id="notificationDropdown"
-                                role="button"
-                                data-bs-toggle="dropdown"
-                                aria-expanded="false">
-                                <i class="bi bi-bell fs-5"></i>
-
-                                @if(isset($notificationCount) && $notificationCount > 0)
-                                <span
-                                    class="position-absolute top-0 start-75 translate-middle badge rounded-pill bg-danger">
-                                    {{ $notificationCount > 99 ? '99+' : $notificationCount }}
-                                </span>
-                                @endif
-                            </a>
-
-
-                            <ul
-                                class="dropdown-menu dropdown-menu-end shadow-sm border-0"
-                                aria-labelledby="notificationDropdown"
-                                style="min-width: 300px;">
-
-                                <li>
-                                    <h6 class="dropdown-header">
-                                        Notifications
-                                    </h6>
-                                </li>
-
-                                @if(isset($notifications) && $notifications->count())
-
-                                @foreach($notifications as $notification)
-
-                                <li>
-                                    <a
-                                        href="{{ $notification->url ?? '#' }}"
-                                        class="dropdown-item py-2">
-                                        <div class="d-flex gap-2">
-
-                                            <i
-                                                class="{{ $notification->icon ?? 'bi bi-info-circle' }} text-primary"></i>
-
-                                            <div>
-                                                <div class="small fw-semibold">
-                                                    {{ $notification->title }}
-                                                </div>
-
-                                                @if(isset($notification->message))
-                                                <div class="small text-muted">
-                                                    {{ $notification->message }}
-                                                </div>
-                                                @endif
-                                            </div>
-
-                                        </div>
-                                    </a>
-                                </li>
-
-                                @endforeach
-
-                                @else
-
-                                <li>
-                                    <div class="dropdown-item-text text-center py-4">
-
-                                        <i
-                                            class="bi bi-bell-slash text-muted fs-3"></i>
-
-                                        <div class="small text-muted mt-2">
-                                            No notifications
-                                        </div>
-
-                                    </div>
-                                </li>
-
-                                @endif
-
-                            </ul>
-
-                        </li>
-                </div>
-                <div>
-                    {{-- User Menu --}}
-                    <li class="nav-item dropdown ms-lg-2 list-unstyled">
-
-                        <a
-                            href="#"
-                            class="nav-link dropdown-toggle d-flex align-items-center gap-2"
-                            id="userDropdown"
-                            role="button"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false">
-
-                            @php
-                            $user = auth()->user();
-
-                            $displayName =
-                            $user?->display_name
-                            ?? $user?->full_name
-                            ?? $user?->username
-                            ?? 'User';
-
-                            $profileImage =
-                            $user?->profile_image
-                            ?? 'images/default-user.png';
-                            @endphp
-
-
-                            <img
-                                src="{{ asset($profileImage) }}"
-                                alt="{{ $displayName }}"
-                                width="38"
-                                height="38"
-                                class="rounded-circle border"
-                                style="object-fit: cover;">
-
-
-                            <div class="d-none d-md-block text-start">
-
-                                <div class="fw-semibold small">
-                                    {{ $displayName }}
-                                </div>
-
-                                <div class="text-muted small">
-                                    {{ $user?->role?->role_name ?? 'Admin' }}
-                                </div>
-
-                            </div>
-
-                        </a>
-                        <ul
-                            class="dropdown-menu dropdown-menu-end shadow-sm border-0"
-                            aria-labelledby="userDropdown">
-
-                            <li>
-                                <h6 class="dropdown-header">
-                                    Account
-                                </h6>
-                            </li>
-
-
-                            {{-- Profile --}}
-                            <li>
-                                <a
-                                    class="dropdown-item"
-                                    href="{{ url('/admin/profile') }}">
-                                    <i class="bi bi-person me-2"></i>
-                                    My Profile
-                                </a>
-                            </li>
-
-
-                            {{-- Settings --}}
-                            <li>
-                                <a
-                                    class="dropdown-item"
-                                    href="{{ url('/admin/settings') }}">
-                                    <i class="bi bi-gear me-2"></i>
-                                    Settings
-                                </a>
-                            </li>
-
-
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-
-
-                            {{-- Logout --}}
-                            <li>
-
-                                <form action="{{ url('/auth/signout') }}" method="POST">
-
-                                    @csrf
-
-                                    <button
-                                        type="submit"
-                                        class="dropdown-item text-danger">
-                                        <i class="bi bi-box-arrow-right me-2"></i>
-                                        Sign Out
-                                    </button>
-
-                                </form>
-
-                            </li>
-                        </ul>
-                    </li>
-                </div>
-            </div>
-        </div>
+        @endforeach
     </div>
-</nav>
+
+</aside>
+
+
+<style>
+    #admin-navbar {
+        width: 260px;
+        min-width: 260px;
+        height: calc(100vh - 65px);
+        position: sticky;
+        top: 65px;
+        overflow-y: auto;
+        transition: all 0.25s ease;
+        z-index: 1020;
+    }
+
+    .sidebar-inner {
+        padding: 1rem 0.75rem;
+    }
+
+    .sidebar-section {
+        margin-bottom: 1.25rem;
+    }
+
+    .sidebar-heading {
+        padding: 0.5rem 0.75rem;
+        margin-bottom: 0.25rem;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        color: #6c757d;
+    }
+
+    .sidebar-link {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        width: 100%;
+        padding: 0.65rem 0.75rem;
+        color: #495057;
+        text-decoration: none;
+        border-radius: 0.5rem;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition:
+            background-color 0.15s ease,
+            color 0.15s ease;
+    }
+
+    .sidebar-link i {
+        width: 20px;
+        text-align: center;
+        font-size: 1rem;
+    }
+
+    .sidebar-link:hover {
+        color: #0d6efd;
+        background-color: #f1f5ff;
+    }
+
+    .sidebar-link.active {
+        color: #0d6efd;
+        background-color: #e9f0ff;
+        font-weight: 600;
+    }
+
+    .sidebar-link.active i {
+        color: #0d6efd;
+    }
+
+    #admin-sidebar::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    #admin-sidebar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    #admin-sidebar::-webkit-scrollbar-thumb {
+        background: #dee2e6;
+        border-radius: 10px;
+    }
+
+    @media (max-width: 991.98px) {
+
+        #admin-sidebar {
+            position: fixed;
+            top: 65px;
+            left: -270px;
+            height: calc(100vh - 65px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        #admin-sidebar.show {
+            left: 0;
+        }
+
+        #admin-content {
+            width: 100%;
+        }
+
+    }
+</style>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        const sidebar = document.getElementById('admin-sidebar');
+        const toggle = document.getElementById('sidebarToggle');
+
+        if (!sidebar || !toggle) {
+            return;
+        }
+
+        toggle.addEventListener('click', function() {
+            sidebar.classList.toggle('show');
+        });
+
+        document.addEventListener('click', function(event) {
+
+            if (window.innerWidth >= 992) {
+                return;
+            }
+
+            if (
+                sidebar.classList.contains('show') &&
+                !sidebar.contains(event.target) &&
+                !toggle.contains(event.target)
+            ) {
+                sidebar.classList.remove('show');
+            }
+
+        });
+
+    });
+</script>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        const sidebar = document.getElementById('admin-sidebar');
+        const toggle = document.getElementById('sidebarToggle');
+
+        if (!sidebar || !toggle) {
+            return;
+        }
+
+        toggle.addEventListener('click', function() {
+            sidebar.classList.toggle('show');
+        });
+
+        document.addEventListener('click', function(event) {
+
+            if (window.innerWidth >= 992) {
+                return;
+            }
+
+            if (
+                sidebar.classList.contains('show') &&
+                !sidebar.contains(event.target) &&
+                !toggle.contains(event.target)
+            ) {
+                sidebar.classList.remove('show');
+            }
+
+        });
+
+    });
+</script>

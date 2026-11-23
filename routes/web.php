@@ -1,17 +1,29 @@
+
 <?php
 
-use App\Http\Controllers\Account\DashboardController as AccountDashboardController;
-// use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
-use App\Http\Controllers\Admin\AdminController;
-use App\Http\Controllers\Admin\Registration\StudentRegistrationController;
-use App\Http\Controllers\Admin\Registration\EmployeeRegistrationController;
-use App\Http\Controllers\Admin\PeopleController;
-use App\Http\Controllers\Admin\AcademicController;
-use App\Http\Controllers\Admin\InstituteController;
-
-use App\Http\Controllers\Auth\WebAuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
+// Authentication
+use App\Http\Controllers\Auth\WebAuthController;
+
+// Admin Controllers
+use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\AccessControlController as AdminAccessControlController;
+use App\Http\Controllers\Admin\PeopleController as AdminPeopleController;
+use App\Http\Controllers\Admin\AcademicController as AdminAcademicController;
+use App\Http\Controllers\Admin\InstituteController as AdminInstituteController;
+use App\Http\Controllers\Admin\Registration\StudentRegistrationController as AdminStudentRegistrationController;
+use App\Http\Controllers\Admin\Registration\EmployeeRegistrationController as AdminEmployeeRegistrationController;
+
+// Account Controllers
+use App\Http\Controllers\Account\AccountController;
+use App\Http\Controllers\Account\PeopleController as AccountPeopleController;
+use App\Http\Controllers\Account\AcademicController as AccountAcademicController;
+use App\Http\Controllers\Account\InstituteController as AccountInstituteController;
+use App\Http\Controllers\Account\Registration\StudentRegistrationController as AccountStudentRegistrationController;
+use App\Http\Controllers\Account\Registration\EmployeeRegistrationController as AccountEmployeeRegistrationController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -24,36 +36,25 @@ Route::prefix('auth')
     ->middleware('guest')
     ->group(function () {
 
-        Route::get('/signin', [
-            WebAuthController::class,
-            'show',
-        ])->name('signin');
+        Route::get('/signin', [WebAuthController::class, 'show'])
+            ->name('signin');
 
-        Route::post('/signin', [
-            WebAuthController::class,
-            'login',
-        ])->name('login');
+        Route::post('/signin', [WebAuthController::class, 'login'])
+            ->name('login');
 
-        Route::get('/forgot-password', [
-            WebAuthController::class,
-            'showForgotPassword',
-        ])->name('forgot');
+        Route::get('/forgot-password', [WebAuthController::class, 'showForgotPassword'])
+            ->name('forgot');
 
-        Route::post('/forgot-password', [
-            WebAuthController::class,
-            'sendResetLink',
-        ])->name('forgot.submit');
+        Route::post('/forgot-password', [WebAuthController::class, 'sendResetLink'])
+            ->name('forgot.submit');
 
-        Route::get('/reset-password/{token}', [
-            WebAuthController::class,
-            'showResetPassword',
-        ])->name('reset');
+        Route::get('/reset-password/{token}', [WebAuthController::class, 'showResetPassword'])
+            ->name('reset');
 
-        Route::post('/reset-password', [
-            WebAuthController::class,
-            'resetPassword',
-        ])->name('reset.submit');
+        Route::post('/reset-password', [WebAuthController::class, 'resetPassword'])
+            ->name('reset.submit');
     });
+
 
 /*
 |--------------------------------------------------------------------------
@@ -61,10 +62,10 @@ Route::prefix('auth')
 |--------------------------------------------------------------------------
 */
 
-Route::post('/auth/signout', [
-    WebAuthController::class,
-    'logout',
-])->name('auth.signout');
+Route::post('/auth/signout', [WebAuthController::class, 'logout'])
+    ->middleware('auth')
+    ->name('auth.signout');
+
 
 /*
 |--------------------------------------------------------------------------
@@ -76,12 +77,9 @@ Route::get('/', function (Request $request) {
 
     $user = $request->user();
 
-    $role = strtolower(
-        trim($user->role?->role_name ?? '')
-    );
+    $role = strtolower(trim($user->role?->role_name ?? ''));
 
     return match ($role) {
-
         'admin' => redirect()->route('admin.dashboard'),
 
         'accountant', 'account' => redirect()->route('account.dashboard'),
@@ -90,83 +88,131 @@ Route::get('/', function (Request $request) {
     };
 })->middleware('auth')->name('home');
 
+
 /*
 |--------------------------------------------------------------------------
-| Admin
+| Admin Routes
 |--------------------------------------------------------------------------
 */
-Route::middleware([
-    'auth',
-    'role:admin',
-])
+
+Route::middleware(['auth', 'role:admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
 
-        Route::get('/dashboard', [
-            AdminController::class,
-            'dashboard',
-        ])->name('dashboard');
+        // Dashboard
+        Route::get('/dashboard', [AdminController::class, 'dashboard'])
+            ->name('dashboard');
 
-        // institute
-        Route::get('institute/branches', [
-            InstituteController::class,
+
+        /*
+        |--------------------------------------------------------------------------
+        | Institute
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/institute/institute', function () {
+            return redirect()->route('admin.institute.institute');
+        })->name('institute.index');
+
+        Route::get('/institute/branches', [
+            AdminInstituteController::class,
             'branches',
         ])->name('institute.branches');
 
-        Route::get('institute/rooms', [
-            InstituteController::class,
-            'rooms',
-        ])->name('institute.positions');
-
-        Route::get('institute/positions', [
-            InstituteController::class,
-            'positions',
-        ])->name('institute.positions');
-
-        Route::get('institute/rooms', [
-            InstituteController::class,
+        Route::get('/institute/rooms', [
+            AdminInstituteController::class,
             'rooms',
         ])->name('institute.rooms');
 
-        // academic
-        Route::get(
-            '/academic/academic-years',
-            [AcademicController::class, 'academicYears']
-        )->name('academic.academic-years');
+        Route::get('/institute/positions', [
+            AdminInstituteController::class,
+            'positions',
+        ])->name('institute.positions');
 
-        Route::get(
-            '/academic/academic-classes',
-            [AcademicController::class, 'academicClasses']
-        )->name('academic.academic-classes');
 
-        Route::get(
-            '/academic/academic-subjects',
-            [AcademicController::class, 'academicSubjects']
-        )->name('academic.academic-subjects');
+        /*
+        |--------------------------------------------------------------------------
+        | Academic
+        |--------------------------------------------------------------------------
+        */
 
-        Route::get(
-            '/academic/academic-courses',
-            [AcademicController::class, 'academicCourses']
-        )->name('academic.academic-courses');
+        Route::get('/academic/academic-years', [
+            AdminAcademicController::class,
+            'academicYears',
+        ])->name('academic.academic-years');
 
-        // people
-        Route::get('/people/employees', [PeopleController::class, 'employees'])
-            ->name('people.employees');
-        Route::get('/people/teachers', [PeopleController::class, 'teachers'])
-            ->name('people.teachers');
-        Route::get('/people/students', [PeopleController::class, 'students'])
-            ->name('people.students');
+        Route::get('/academic/academic-classes', [
+            AdminAcademicController::class,
+            'academicClasses',
+        ])->name('academic.academic-classes');
 
-        // registrations
+        Route::get('/academic/academic-subjects', [
+            AdminAcademicController::class,
+            'academicSubjects',
+        ])->name('academic.academic-subjects');
+
+        Route::get('/academic/academic-courses', [
+            AdminAcademicController::class,
+            'academicCourses',
+        ])->name('academic.academic-courses');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | People
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/people/employees', [
+            AdminPeopleController::class,
+            'employees',
+        ])->name('people.employees');
+
+        Route::get('/people/teachers', [
+            AdminPeopleController::class,
+            'teachers',
+        ])->name('people.teachers');
+
+        Route::get('/people/students', [
+            AdminPeopleController::class,
+            'students',
+        ])->name('people.students');
+
+        Route::get('/people/students/{student}', [
+            AdminPeopleController::class,
+            'showStudent',
+        ])->whereNumber('student')->name('people.students.show');
+
+        Route::get('/users', [
+            AdminAccessControlController::class,
+            'users',
+        ])->name('users.index');
+
+        Route::get('/users/roles', [
+            AdminAccessControlController::class,
+            'roles',
+        ])->name('roles.index');
+
+        Route::get('/users/permissions', [
+            AdminAccessControlController::class,
+            'permissions',
+        ])->name('permissions.index');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Registrations
+        |--------------------------------------------------------------------------
+        */
 
         Route::get('/registrations/students', [
-            StudentRegistrationController::class,
+            AdminStudentRegistrationController::class,
             'index',
         ])->name('registrations.students.index');
 
         Route::get('/registrations/employees', [
-            EmployeeRegistrationController::class,
+            AdminEmployeeRegistrationController::class,
             'index',
         ])->name('registrations.employees.index');
     });
@@ -174,31 +220,125 @@ Route::middleware([
 
 /*
 |--------------------------------------------------------------------------
-| Account
+| Account Routes
 |--------------------------------------------------------------------------
 */
 
-Route::middleware([
-    'auth',
-    'role:accountant,account',
-])
+Route::middleware(['auth', 'role:account,accountant'])
     ->prefix('account')
     ->name('account.')
     ->group(function () {
 
+        // Dashboard
         Route::get('/dashboard', [
-            AccountDashboardController::class,
-            'index',
+            AccountController::class,
+            'dashboard',
         ])->name('dashboard');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Institute
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/institute/institute', function () {
+            return redirect()->route('account.institute.institute');
+        })->name('institute.index');
+
+        Route::get('/institute/branches', [
+            AccountInstituteController::class,
+            'branches',
+        ])->name('institute.branches');
+
+        Route::get('/institute/rooms', [
+            AccountInstituteController::class,
+            'rooms',
+        ])->name('institute.rooms');
+
+        Route::get('/institute/positions', [
+            AccountInstituteController::class,
+            'positions',
+        ])->name('institute.positions');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Academic
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/academic/academic-years', [
+            AccountAcademicController::class,
+            'academicYears',
+        ])->name('academic.academic-years');
+
+        Route::get('/academic/academic-classes', [
+            AccountAcademicController::class,
+            'academicClasses',
+        ])->name('academic.academic-classes');
+
+        Route::get('/academic/academic-subjects', [
+            AccountAcademicController::class,
+            'academicSubjects',
+        ])->name('academic.academic-subjects');
+
+        Route::get('/academic/academic-courses', [
+            AccountAcademicController::class,
+            'academicCourses',
+        ])->name('academic.academic-courses');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | People
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/people/employees', [
+            AccountPeopleController::class,
+            'employees',
+        ])->name('people.employees');
+
+        Route::get('/people/teachers', [
+            AccountPeopleController::class,
+            'teachers',
+        ])->name('people.teachers');
+
+        Route::get('/people/students', [
+            AccountPeopleController::class,
+            'students',
+        ])->name('people.students');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Registrations
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/registrations/students', [
+            AccountStudentRegistrationController::class,
+            'index',
+        ])->name('registrations.students.index');
+
+        Route::get('/registrations/employees', [
+            AccountEmployeeRegistrationController::class,
+            'index',
+        ])->name('registrations.employees.index');
     });
+
 
 /*
 |--------------------------------------------------------------------------
-| Debug
+| Debug Routes
 |--------------------------------------------------------------------------
 */
 
+// Remove these routes in production.
+
 Route::get('/debug-auth', function (Request $request) {
+
     return response()->json([
         'auth_check' => $request->user() !== null,
         'user' => $request->user(),

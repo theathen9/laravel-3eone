@@ -3,6 +3,8 @@
 // ============================================================
 import { apiFetch } from "./api";
 
+const API_URL = import.meta.env.VITE_APP_API_URL || "/api";
+
 const StudentRegistration = {
     currentStep: 0,
     steps: [],
@@ -268,7 +270,7 @@ const StudentRegistration = {
             formData.set("step", String(this.currentStep + 1));
 
             const response = await apiFetch(
-                "/api/v1/students/register-process",
+                `${API_URL}/v1/students/register-process`,
                 {
                     method: "POST",
                     body: formData,
@@ -316,7 +318,7 @@ const StudentRegistration = {
         }
 
         try {
-            const response = await apiFetch("/api/v1/classes/available", {
+            const response = await apiFetch(`${API_URL}/v1/classes/available`, {
                 method: "GET",
                 headers: {
                     Accept: "application/json",
@@ -683,7 +685,7 @@ const StudentRegistration = {
             throw new Error("Invoice ID is missing.");
         }
 
-        const invoiceUrl = `/api/v1/invoices/${encodeURIComponent(invoiceId)}/pdf`;
+        const invoiceUrl = `${API_URL}/v1/invoices/${encodeURIComponent(invoiceId)}/pdf`;
 
         const response = await apiFetch(invoiceUrl, {
             method: "GET",
@@ -714,20 +716,45 @@ const StudentRegistration = {
 
         // Verify the actual PDF signature instead of trusting
         // the Content-Type header alone.
-        const header = await blob.slice(0, 5).text();
+        const prefix = new Uint8Array(
+            await blob.slice(0, 1024).arrayBuffer(),
+        );
+        const pdfSignature = [0x25, 0x50, 0x44, 0x46, 0x2d];
+        let signatureOffset = -1;
 
-        if (header !== "%PDF-") {
-            throw new Error(
-                "The server response is not a valid PDF. Please check the invoice API.",
-            );
+        for (let index = 0; index <= prefix.length - pdfSignature.length; index += 1) {
+            if (pdfSignature.every((byte, offset) => prefix[index + offset] === byte)) {
+                signatureOffset = index;
+                break;
+            }
         }
+
+        if (signatureOffset === -1) {
+            const contentType = response.headers.get("content-type") || "unknown content type";
+            let message = `Invoice API returned ${contentType} instead of a PDF.`;
+
+            if (contentType.includes("json")) {
+                try {
+                    const errorData = JSON.parse(await blob.text());
+                    message = errorData.message || message;
+                } catch {
+                    // Keep the content-type diagnostic for malformed JSON.
+                }
+            }
+
+            throw new Error(message);
+        }
+
+        const pdfBlob = signatureOffset === 0
+            ? blob
+            : blob.slice(signatureOffset, blob.size, "application/pdf");
 
         // Release the previous object URL if one exists.
         if (this.invoiceDownloadUrl) {
             URL.revokeObjectURL(this.invoiceDownloadUrl);
         }
 
-        this.invoiceDownloadUrl = URL.createObjectURL(blob);
+        this.invoiceDownloadUrl = URL.createObjectURL(pdfBlob);
 
         const link = document.createElement("a");
 

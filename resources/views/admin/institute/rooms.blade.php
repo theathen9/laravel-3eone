@@ -23,25 +23,11 @@
             </p>
         </div>
 
-        @if (Route::has('admin.rooms.create'))
-        <a href="{{ route('admin.rooms.create') }}"
-            class="inline-flex items-center justify-center gap-2 rounded-xl bg-[#d1935c] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#bd7e49]">
-            <svg xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2">
-                <path d="M12 5v14M5 12h14" />
-            </svg>
-            Add New Room
-        </a>
-        @endif
     </div>
 
     {{-- Flash Messages --}}
     @if (session('success'))
-    <div class="mb-5 flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-700"
+    <div class="mb-3 flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-700"
         role="status">
         <svg xmlns="http://www.w3.org/2000/svg"
             class="h-5 w-5 shrink-0"
@@ -56,14 +42,14 @@
     @endif
 
     @if (session('error'))
-    <div class="mb-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"
+    <div class="mb-3 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700"
         role="alert">
         {{ session('error') }}
     </div>
     @endif
 
     {{-- Statistics --}}
-    <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="mb-3 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
 
         <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <div class="flex items-center justify-between">
@@ -87,7 +73,7 @@
             </div>
         </div>
 
-        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div class="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-slate-500">Active Rooms</p>
@@ -108,7 +94,7 @@
             </div>
         </div>
 
-        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div class="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-slate-500">Inactive Rooms</p>
@@ -130,7 +116,7 @@
             </div>
         </div>
 
-        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div class="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-slate-500">Total Capacity</p>
@@ -158,7 +144,7 @@
 
     {{-- Search and Filter --}}
     <div class="mb-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <form action="{{ url()->current() }}"
+        <form id="roomSearchForm" action="{{ url()->current() }}"
             method="GET"
             class="flex flex-col gap-3 sm:flex-row">
 
@@ -174,6 +160,7 @@
                 </svg>
 
                 <input type="search"
+                    id="roomSearchInput"
                     name="search"
                     value="{{ request('search') }}"
                     placeholder="Search room name..."
@@ -192,23 +179,30 @@
                 Search
             </button>
 
-            @if (request()->hasAny(['search', 'status']))
-            <a href="{{ url()->current() }}"
-                class="rounded-xl border border-slate-200 px-5 py-3 text-center text-sm font-medium text-slate-600 transition hover:bg-slate-50">
+            <a id="roomSearchReset" href="{{ url()->current() }}"
+                class="{{ request()->hasAny(['search', 'status']) ? '' : 'hidden' }} rounded-xl border border-slate-200 px-5 py-3 text-center text-sm font-medium text-slate-600 transition hover:bg-slate-50">
                 Reset
             </a>
-            @endif
         </form>
     </div>
 
+    <div id="roomResults" aria-live="polite">
     {{-- Room Cards --}}
-    <div class="mb-4 flex items-center justify-between">
+    <div class="mb-3 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
             <h2 class="text-lg font-bold text-slate-800">All Rooms</h2>
             <p class="mt-1 text-sm text-slate-500">
                 {{ isset($rooms) ? $rooms->total() : 0 }} rooms found
             </p>
         </div>
+        <button type="button"
+            class="room-create inline-flex items-center justify-center gap-2 rounded-xl bg-[#d1935c] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#bd7e49]"
+            data-endpoint="{{ route('api.v1.rooms.store') }}">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 5v14M5 12h14" />
+            </svg>
+            Add Room
+        </button>
     </div>
 
     @if (isset($rooms) && $rooms->count())
@@ -225,10 +219,10 @@
             {{-- Card Accent --}}
             <div class="h-1.5 bg-gradient-to-r from-[#d1935c] to-orange-300"></div>
 
-            <div class="p-5">
+            <div class="p-3">
 
                 {{-- Room Header --}}
-                <div class="mb-5 flex items-start justify-between gap-3">
+                <div class="mb-3 flex items-start justify-between gap-3">
                     <div class="flex min-w-0 items-center gap-3">
                         <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-[#bd7e49] transition group-hover:bg-orange-100">
                             <svg xmlns="http://www.w3.org/2000/svg"
@@ -292,46 +286,33 @@
                 </div>
 
                 {{-- Card Actions --}}
-                <div class="mt-5 flex items-center gap-2 border-t border-slate-100 pt-4">
-
-                    @if (Route::has('admin.rooms.edit'))
-                    <a href="{{ route('admin.rooms.edit', $room->room_id) }}"
-                        class="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-slate-200 px-3 py-2.5 text-sm font-semibold text-slate-600 transition hover:border-orange-200 hover:bg-orange-50 hover:text-orange-700">
-                        <svg xmlns="http://www.w3.org/2000/svg"
-                            class="h-4 w-4"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2">
+                <div class="mt-5 grid grid-cols-3 gap-2 border-t border-slate-100 pt-4">
+                    <button type="button"
+                        class="room-detail inline-flex items-center justify-center gap-1.5 rounded-lg border border-sky-100 bg-sky-50 px-2 py-2.5 text-xs font-semibold text-sky-700 transition hover:bg-sky-100"
+                        data-endpoint="{{ route('api.v1.rooms.show', $room->room_id) }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="9" />
+                            <path d="M12 11v5M12 8h.01" />
+                        </svg>
+                        Detail
+                    </button>
+                    <button type="button"
+                        class="room-edit inline-flex items-center justify-center gap-1.5 rounded-lg border border-orange-100 bg-orange-50 px-2 py-2.5 text-xs font-semibold text-orange-700 transition hover:bg-orange-100"
+                        data-endpoint="{{ route('api.v1.rooms.show', $room->room_id) }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="m16 4 4 4M4 20l4-.8L19.5 7.7a2.12 2.12 0 0 0-3-3L5 16.2 4 20Z" />
                         </svg>
                         Edit
-                    </a>
-                    @endif
-
-                    @if (Route::has('admin.rooms.destroy'))
-                    <form action="{{ route('admin.rooms.destroy', $room->room_id) }}"
-                        method="POST"
-                        class="flex-1"
-                        onsubmit="return confirm('Are you sure you want to delete this room?');">
-                        @csrf
-                        @method('DELETE')
-
-                        <button type="submit"
-                            class="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-red-100 px-3 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50">
-                            <svg xmlns="http://www.w3.org/2000/svg"
-                                class="h-4 w-4"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2">
-                                <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v5M14 11v5" />
-                            </svg>
-                            Delete
-                        </button>
-                    </form>
-                    @endif
-
+                    </button>
+                    <button type="button"
+                        class="room-delete inline-flex items-center justify-center gap-1.5 rounded-lg border border-red-100 bg-red-50 px-2 py-2.5 text-xs font-semibold text-red-600 transition hover:bg-red-100"
+                        data-endpoint="{{ route('api.v1.rooms.destroy', $room->room_id) }}"
+                        data-room-name="{{ $room->room_name }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v5M14 11v5" />
+                        </svg>
+                        Delete
+                    </button>
                 </div>
             </div>
         </article>
@@ -370,15 +351,218 @@
             No rooms match your search. Try another room name or add a new room.
         </p>
 
-        @if (Route::has('admin.rooms.create'))
-        <a href="{{ route('admin.rooms.create') }}"
-            class="mt-5 inline-flex items-center justify-center rounded-xl bg-[#d1935c] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#bd7e49]">
-            + Add New Room
-        </a>
-        @endif
     </div>
 
     @endif
 
+    </div>
 </div>
+
+<dialog id="roomDetailDialog"
+    class="m-auto w-[calc(100%-2rem)] max-w-lg rounded-2xl border-0 bg-transparent p-0 backdrop:bg-slate-900/50">
+    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+        <div class="flex items-start justify-between border-b border-slate-100 px-5 py-4">
+            <div>
+                <p id="roomDetailId" class="text-xs font-semibold uppercase tracking-wider text-[#b87d49]"></p>
+                <h2 id="roomDetailName" class="mt-1 text-xl font-bold text-slate-800"></h2>
+            </div>
+            <button type="button" id="closeRoomDetail"
+                class="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50"
+                aria-label="Close room details">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="m6 6 12 12M18 6 6 18" />
+                </svg>
+            </button>
+        </div>
+        <div class="grid gap-3 p-5 sm:grid-cols-2">
+            <div class="rounded-xl bg-slate-50 p-3">
+                <p class="text-xs font-medium text-slate-400">Capacity</p>
+                <p id="roomDetailCapacity" class="mt-1 text-sm font-semibold text-slate-700"></p>
+            </div>
+            <div class="rounded-xl bg-slate-50 p-3">
+                <p class="text-xs font-medium text-slate-400">Status</p>
+                <p id="roomDetailStatus" class="mt-1 text-sm font-semibold text-slate-700"></p>
+            </div>
+        </div>
+    </div>
+</dialog>
+
+<dialog id="roomEditDialog"
+    class="m-auto w-[calc(100%-2rem)] max-w-lg rounded-2xl border-0 bg-transparent p-0 backdrop:bg-slate-900/50">
+    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+        <div class="flex items-start justify-between border-b border-slate-100 px-5 py-4">
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-wider text-[#b87d49]">Institute Management</p>
+                <h2 id="roomEditTitle" class="mt-1 text-xl font-bold text-slate-800">Edit Room</h2>
+            </div>
+            <button type="button" id="closeRoomEdit"
+                class="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50"
+                aria-label="Close room form">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="m6 6 12 12M18 6 6 18" />
+                </svg>
+            </button>
+        </div>
+        <form id="roomEditForm" class="space-y-4 p-5">
+            <p id="roomEditMessage" class="hidden rounded-lg p-3 text-sm" role="status" aria-live="polite"></p>
+            <label class="block text-sm font-medium text-slate-700">
+                Room Name
+                <input id="editRoomName" required maxlength="50"
+                    class="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-100">
+            </label>
+            <label class="block text-sm font-medium text-slate-700">
+                Capacity
+                <input id="editRoomCapacity" type="number" min="1" step="1" required
+                    class="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-100">
+            </label>
+            <label class="block text-sm font-medium text-slate-700">
+                Status
+                <select id="editRoomStatus"
+                    class="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-100">
+                    <option value="1">Active</option>
+                    <option value="0">Inactive</option>
+                </select>
+            </label>
+            <div class="flex justify-end gap-3 border-t border-slate-100 pt-4">
+                <button type="button" id="cancelRoomEdit"
+                    class="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
+                    Cancel
+                </button>
+                <button type="submit" id="saveRoomEdit"
+                    class="rounded-lg bg-[#d1935c] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#bd7e49] disabled:cursor-not-allowed disabled:opacity-60">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+@push('scripts')
+<script>
+    const roomSearchForm = document.getElementById('roomSearchForm');
+    const roomSearchInput = document.getElementById('roomSearchInput');
+    const roomStatusFilter = roomSearchForm.querySelector('[name="status"]');
+    const roomSearchReset = document.getElementById('roomSearchReset');
+    const roomResults = document.getElementById('roomResults');
+    const roomSearchMessage = document.createElement('p');
+    roomSearchMessage.className = 'hidden mt-3 text-sm text-red-600';
+    roomSearchMessage.setAttribute('role', 'status');
+    roomSearchMessage.setAttribute('aria-live', 'polite');
+    roomSearchForm.parentElement.append(roomSearchMessage);
+    let roomSearchTimeout;
+    let activeRoomSearch;
+
+    function updateRoomSearchReset() {
+        roomSearchReset.classList.toggle(
+            'hidden',
+            !roomSearchInput.value.trim() && !roomStatusFilter.value
+        );
+    }
+
+    updateRoomSearchReset();
+
+    async function loadRooms(url, historyMode = 'replace') {
+        if (activeRoomSearch) {
+            activeRoomSearch.abort();
+        }
+
+        const controller = new AbortController();
+        activeRoomSearch = controller;
+        roomResults.setAttribute('aria-busy', 'true');
+        roomSearchMessage.classList.add('hidden');
+
+        try {
+            const response = await fetch(url, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                signal: controller.signal,
+            });
+
+            if (!response.ok) {
+                throw new Error(`Room search failed (${response.status}).`);
+            }
+
+            const responseDocument = new DOMParser().parseFromString(await response.text(), 'text/html');
+            const updatedResults = responseDocument.getElementById('roomResults');
+            if (!updatedResults) {
+                throw new Error('Room search response did not contain results.');
+            }
+
+            roomResults.innerHTML = updatedResults.innerHTML;
+            if (historyMode === 'push') {
+                window.history.pushState({}, '', url.toString());
+            } else if (historyMode === 'replace') {
+                window.history.replaceState({}, '', url.toString());
+            }
+            updateRoomSearchReset();
+        } catch (error) {
+            if (error.name === 'AbortError') {
+                return;
+            }
+
+            console.error('Could not load room search results:', error);
+            roomSearchMessage.textContent = 'Could not load rooms. Please try again.';
+            roomSearchMessage.classList.remove('hidden');
+        } finally {
+            if (activeRoomSearch === controller) {
+                activeRoomSearch = null;
+                roomResults.removeAttribute('aria-busy');
+            }
+        }
+    }
+
+    function searchRooms() {
+        const url = new URL(roomSearchForm.action, window.location.href);
+        const params = new URLSearchParams(new FormData(roomSearchForm));
+        if (!roomSearchInput.value.trim()) {
+            params.delete('search');
+        }
+        if (!roomStatusFilter.value) {
+            params.delete('status');
+        }
+        url.search = params.toString();
+        loadRooms(url);
+    }
+
+    roomSearchForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        window.clearTimeout(roomSearchTimeout);
+        searchRooms();
+    });
+
+    roomSearchInput.addEventListener('input', () => {
+        window.clearTimeout(roomSearchTimeout);
+        roomSearchTimeout = window.setTimeout(searchRooms, 400);
+    });
+
+    roomStatusFilter.addEventListener('change', () => {
+        window.clearTimeout(roomSearchTimeout);
+        searchRooms();
+    });
+
+    roomSearchReset.addEventListener('click', (event) => {
+        event.preventDefault();
+        window.clearTimeout(roomSearchTimeout);
+        roomSearchInput.value = '';
+        roomStatusFilter.value = '';
+        searchRooms();
+    });
+
+    roomResults.addEventListener('click', (event) => {
+        const paginationLink = event.target.closest('a');
+        if (paginationLink && roomResults.contains(paginationLink)) {
+            event.preventDefault();
+            loadRooms(paginationLink.href, 'push');
+        }
+    });
+
+    window.addEventListener('popstate', () => {
+        const url = new URL(window.location.href);
+        roomSearchInput.value = url.searchParams.get('search') || '';
+        roomStatusFilter.value = url.searchParams.get('status') || '';
+        updateRoomSearchReset();
+        loadRooms(url, 'none');
+    });
+</script>
+@endpush
+
 @endsection

@@ -4,55 +4,43 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
-use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Http\Request;
+use App\Services\InvoiceService;
+use Illuminate\Contracts\View\View;
+use Symfony\Component\HttpFoundation\Response;
 
 class InvoiceController extends Controller
 {
-    public function pdf(Request $request, Invoice $invoice)
+    public function __construct(
+        protected InvoiceService $invoiceService
+    ) {}
+
+    public function pdf(Invoice $invoice): Response
     {
-        abort_unless($invoice->exists, 404);
+        if (! $this->invoiceService->isInvoiceable($invoice)) {
+            return response()->json([
+                'error' => 'Invoice is only available after payment is confirmed.',
+            ], 409);
+        }
 
-        $invoice->load([
-            'student',
-            'items.enrollment.class.course',
-            'items.enrollment.class.teacher',
-            'items.enrollment.class.room',
-            'items.enrollment.class.timeSlot',
-            'items.enrollment.class.timetables.day',
+        $content = $this->invoiceService->generatePdf($invoice);
+
+        return response($content, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => sprintf(
+                'attachment; filename="invoice-%d.pdf"',
+                $invoice->invoice_id
+            ),
+            'Content-Length' => (string) strlen($content),
+            'Cache-Control' => 'no-store',
+            'X-Content-Type-Options' => 'nosniff',
         ]);
-
-        $classes = $invoice->items
-            ->map(fn($item) => $item->enrollment?->class)
-            ->filter();
-
-        $pdf = Pdf::loadView('invoices.student', [
-            'invoice' => $invoice,
-            'student' => $invoice->student,
-            'classes' => $classes,
-        ]);
-
-        return $pdf->download(
-            'invoice-' . $invoice->invoice_no . '.pdf'
-        );
     }
-    public function previewInvoice(Request $request, Invoice $invoice)
+
+    public function previewInvoice(Invoice $invoice): View
     {
-        abort_unless($invoice->exists, 404);
-
-        $invoice->load([
-            'student',
-            'items.enrollment',
-        ]);
-
-        $classes = $invoice->items
-            ->map(fn($item) => $item->enrollment?->class)
-            ->filter();
-
-        return view('invoices.student', [
-            'invoice' => $invoice,
-            'student' => $invoice->student,
-            'classes' => $classes,
-        ]);
+        return view(
+            'invoices.student',
+            $this->invoiceService->viewData($invoice)
+        );
     }
 }

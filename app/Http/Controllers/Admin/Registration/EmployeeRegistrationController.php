@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\Registration;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\Branch;
 use App\Models\Employee;
 use App\Models\Position;
 
@@ -17,6 +18,10 @@ class EmployeeRegistrationController extends Controller
         $idCodeStaff = Employee::max('employee_id') + 1;
         // $idCodeStaff = DB::table('tblEmployees')->count() + 1;
         $positions = Position::all();
+        $branches = Branch::query()
+            ->where('status', 1)
+            ->orderBy('branch_name')
+            ->get(['branch_id', 'branch_code', 'branch_name']);
 
         $autoNameFS = 'សា_' . $idCodeStaff;
         $autoNameMS = 'មា_' . $idCodeStaff;
@@ -41,7 +46,8 @@ class EmployeeRegistrationController extends Controller
             'autoNameEnMS',
             'autoNameEnLS',
             'student_code',
-            'positions'
+            'positions',
+            'branches'
         ));
     }
 

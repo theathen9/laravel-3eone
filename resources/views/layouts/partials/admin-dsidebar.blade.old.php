@@ -1,4 +1,4 @@
-{{-- resources/views/layouts/partials/admin-sidebar.blade.php --}}
+{{-- resources/views/layouts/partials/admin-sidebar.old.blade.php --}}
 
 @php
 $sidebarSections = [

@@ -69,7 +69,7 @@
                                     name="username"
                                     value="{{ old('username') }}"
                                     autocomplete="username"
-                                    placeholder="Username or ID or Email"
+                                    placeholder="Username, email, ID, or employee/student reference code"
                                     required
                                     autofocus
                                     class="peer block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
@@ -83,7 +83,7 @@
                                     peer-[:not(:placeholder-shown)]:text-xs
                                     peer-[:not(:placeholder-shown)]:text-blue-600"
                                 >
-                                    Username or ID or Email
+                                    Username, email, ID, or employee/student reference code
                                 </label>
 
                             </div>

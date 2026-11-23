@@ -36,7 +36,8 @@ class AuthService
             ->where(function ($query) use ($login) {
 
                 $query->where('username', $login)
-                    ->orWhere('email', $login);
+                    ->orWhere('email', $login)
+                    ->orWhere('reference_code', $login);
 
                 if (filter_var($login, FILTER_VALIDATE_INT) !== false) {
                     $query->orWhere(

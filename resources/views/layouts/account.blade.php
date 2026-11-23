@@ -1,4 +1,4 @@
-{{-- resources/views/layouts/admin.blade.php --}}
+{{-- resources/views/layouts/account.blade.php --}}
 
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -58,7 +58,7 @@
     {{-- =========================================================
          ACCOUNT NAVIGATION
     ========================================================== --}}
-    @include('layouts.partials.account-navbar')
+    @include('layouts.partials.account-header')
 
 
     <div class="d-flex">
@@ -66,7 +66,9 @@
         {{-- =====================================================
              SIDEBAR
         ====================================================== --}}
-        @include('layouts.partials.account-sidebar')
+        @include('layouts.partials.sidebar', [
+        'navigation' => 'account'
+        ])
 
 
         {{-- =====================================================

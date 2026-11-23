@@ -1,0 +1,69 @@
+Search Tools
+
+Requested chat rename
+Completed with input: {
+  "title": "WSL preview setup",
+  "automatic": true
+}
+
+Yes — for this project, the reliable setup is WSL2 + Ubuntu, not Windows PowerShell.
+
+Why:
+- OpenNext Cloudflare preview is warning that it is not fully compatible with Windows.
+- Prisma runtime is failing in the Cloudflare preview on Windows because WASM assets are not resolved correctly.
+- The build succeeds, but local preview runtime does not.
+
+Use this workflow:
+
+1. Install WSL2
+- Open PowerShell as Administrator and run:
+  - wsl --install
+- Reboot if prompted.
+- Then choose Ubuntu 22.04 LTS from Microsoft Store if needed.
+
+2. Open Ubuntu terminal
+- In the Ubuntu shell, run:
+  - cd ~
+  - mkdir -p projects
+  - cd projects
+
+3. Clone the repo inside Linux filesystem
+- Do not keep the repo under /mnt/d/...
+- Use a Linux path like:
+  - git clone https://github.com/theathen9/darkerstore.git
+  - cd darkerstore
+
+4. Install prerequisites
+- Node.js 20 LTS and npm:
+  - curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+  - sudo apt-get install -y nodejs
+- Prisma/Next deps may also need:
+  - sudo apt-get install -y build-essential
+
+5. Install project dependencies
+- In the repo:
+  - npm install
+
+6. Make sure env files are present
+- Check if .env and .dev.vars exist in the repo root.
+- If not, copy from example or ask your team for the values.
+
+7. Run the build in WSL
+- npm run build
+
+8. Run preview in WSL
+- npm run preview
+
+9. Open browser
+- Go to:
+  - http://127.0.0.1:8787
+
+Important notes:
+- Do not run preview from Windows PowerShell/CMD for this project.
+- Windows path mounts like /mnt/d/... are known to cause these preview/runtime issues with OpenNext + Cloudflare.
+- Keep the repo entirely inside the Linux filesystem for best results.
+
+If you want, I can also give you:
+- a copy-paste WSL setup script for this repo
+- the exact commands to install Node 20 in Ubuntu
+- or a step-by-step “fix repo for both Windows and Linux” version if you need to keep working from both environments.

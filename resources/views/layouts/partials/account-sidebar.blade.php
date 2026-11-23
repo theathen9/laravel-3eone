@@ -18,8 +18,8 @@
 
             {{-- Dashboard --}}
             <a
-                href="{{ url('/admin/dashboard') }}"
-                class="sidebar-link {{ request()->is('admin/dashboard') ? 'active' : '' }}">
+                href="{{ url('/account/dashboard') }}"
+                class="sidebar-link {{ request()->is('account/dashboard') ? 'active' : '' }}">
                 <i class="bi bi-speedometer2"></i>
                 <span>Dashboard</span>
             </a>
@@ -39,8 +39,8 @@
 
             {{-- Institute --}}
             <a
-                href="{{ url('/admin/institute') }}"
-                class="sidebar-link {{ request()->is('admin/institute') ? 'active' : '' }}">
+                href="{{ url('/account/institute') }}"
+                class="sidebar-link {{ request()->is('account/institute') ? 'active' : '' }}">
                 <i class="bi bi-building"></i>
                 <span>Institute</span>
             </a>
@@ -48,8 +48,8 @@
 
             {{-- Branches --}}
             <a
-                href="{{ url('/admin/institute/branches') }}"
-                class="sidebar-link {{ request()->is('admin/institute/branches*') ? 'active' : '' }}">
+                href="{{ url('/account/institute/branches') }}"
+                class="sidebar-link {{ request()->is('account/institute/branches*') ? 'active' : '' }}">
                 <i class="bi bi-diagram-3"></i>
                 <span>Branches</span>
             </a>
@@ -57,8 +57,8 @@
 
             {{-- Departments --}}
             <a
-                href="{{ url('/admin/institute/departments') }}"
-                class="sidebar-link {{ request()->is('admin/institute/departments*') ? 'active' : '' }}">
+                href="{{ url('/account/institute/departments') }}"
+                class="sidebar-link {{ request()->is('account/institute/departments*') ? 'active' : '' }}">
                 <i class="bi bi-grid"></i>
                 <span>Departments</span>
             </a>
@@ -66,8 +66,8 @@
 
             {{-- Positions --}}
             <a
-                href="{{ url('/admin/institute/positions') }}"
-                class="sidebar-link {{ request()->is('admin/institute/positions*') ? 'active' : '' }}">
+                href="{{ url('/account/institute/positions') }}"
+                class="sidebar-link {{ request()->is('account/institute/positions*') ? 'active' : '' }}">
                 <i class="bi bi-person-badge"></i>
                 <span>Positions</span>
             </a>
@@ -75,8 +75,8 @@
 
             {{-- Rooms --}}
             <a
-                href="{{ url('/admin/institute/rooms') }}"
-                class="sidebar-link {{ request()->is('admin/institute/rooms*') ? 'active' : '' }}">
+                href="{{ url('/account/institute/rooms') }}"
+                class="sidebar-link {{ request()->is('account/institute/rooms*') ? 'active' : '' }}">
                 <i class="bi bi-door-open"></i>
                 <span>Rooms</span>
             </a>
@@ -96,8 +96,8 @@
 
             {{-- Academic Years --}}
             <a
-                href="{{ url('/admin/academic-years') }}"
-                class="sidebar-link {{ request()->is('admin/academic-years*') ? 'active' : '' }}">
+                href="{{ url('/account/academic-years') }}"
+                class="sidebar-link {{ request()->is('account/academic-years*') ? 'active' : '' }}">
                 <i class="bi bi-calendar3"></i>
                 <span>Academic Years</span>
             </a>
@@ -105,8 +105,8 @@
 
             {{-- Classes --}}
             <a
-                href="{{ url('/admin/classes') }}"
-                class="sidebar-link {{ request()->is('admin/classes*') ? 'active' : '' }}">
+                href="{{ url('/account/classes') }}"
+                class="sidebar-link {{ request()->is('account/classes*') ? 'active' : '' }}">
                 <i class="bi bi-easel"></i>
                 <span>Classes</span>
             </a>
@@ -114,8 +114,8 @@
 
             {{-- Subjects --}}
             <a
-                href="{{ url('/admin/subjects') }}"
-                class="sidebar-link {{ request()->is('admin/subjects*') ? 'active' : '' }}">
+                href="{{ url('/account/subjects') }}"
+                class="sidebar-link {{ request()->is('account/subjects*') ? 'active' : '' }}">
                 <i class="bi bi-book"></i>
                 <span>Subjects</span>
             </a>
@@ -123,8 +123,8 @@
 
             {{-- Courses --}}
             <a
-                href="{{ url('/admin/courses') }}"
-                class="sidebar-link {{ request()->is('admin/courses*') ? 'active' : '' }}">
+                href="{{ url('/account/courses') }}"
+                class="sidebar-link {{ request()->is('account/courses*') ? 'active' : '' }}">
                 <i class="bi bi-journals"></i>
                 <span>Courses</span>
             </a>
@@ -144,8 +144,8 @@
 
             {{-- Employees --}}
             <a
-                href="{{ url('/admin/employees') }}"
-                class="sidebar-link {{ request()->is('admin/employees*') ? 'active' : '' }}">
+                href="{{ url('/account/employees') }}"
+                class="sidebar-link {{ request()->is('account/employees*') ? 'active' : '' }}">
                 <i class="bi bi-person-vcard"></i>
                 <span>Employees</span>
             </a>
@@ -153,8 +153,8 @@
 
             {{-- Teachers --}}
             <a
-                href="{{ url('/admin/teachers') }}"
-                class="sidebar-link {{ request()->is('admin/teachers*') ? 'active' : '' }}">
+                href="{{ url('/account/teachers') }}"
+                class="sidebar-link {{ request()->is('account/teachers*') ? 'active' : '' }}">
                 <i class="bi bi-person-workspace"></i>
                 <span>Teachers</span>
             </a>
@@ -162,8 +162,8 @@
 
             {{-- Students --}}
             <a
-                href="{{ url('/admin/students') }}"
-                class="sidebar-link {{ request()->is('admin/students*') ? 'active' : '' }}">
+                href="{{ url('/account/students') }}"
+                class="sidebar-link {{ request()->is('account/students*') ? 'active' : '' }}">
                 <i class="bi bi-people"></i>
                 <span>Students</span>
             </a>
@@ -183,8 +183,8 @@
 
             {{-- Enrollment --}}
             <a
-                href="{{ url('/admin/enrollments') }}"
-                class="sidebar-link {{ request()->is('admin/enrollments*') ? 'active' : '' }}">
+                href="{{ url('/account/enrollments') }}"
+                class="sidebar-link {{ request()->is('account/enrollments*') ? 'active' : '' }}">
                 <i class="bi bi-person-plus"></i>
                 <span>Enrollments</span>
             </a>
@@ -192,8 +192,8 @@
 
             {{-- Attendance --}}
             <a
-                href="{{ url('/admin/attendance') }}"
-                class="sidebar-link {{ request()->is('admin/attendance*') ? 'active' : '' }}">
+                href="{{ url('/account/attendance') }}"
+                class="sidebar-link {{ request()->is('account/attendance*') ? 'active' : '' }}">
                 <i class="bi bi-calendar-check"></i>
                 <span>Attendance</span>
             </a>
@@ -201,8 +201,8 @@
 
             {{-- Scores --}}
             <a
-                href="{{ url('/admin/scores') }}"
-                class="sidebar-link {{ request()->is('admin/scores*') ? 'active' : '' }}">
+                href="{{ url('/account/scores') }}"
+                class="sidebar-link {{ request()->is('account/scores*') ? 'active' : '' }}">
                 <i class="bi bi-bar-chart"></i>
                 <span>Scores</span>
             </a>
@@ -210,8 +210,8 @@
 
             {{-- Results --}}
             <a
-                href="{{ url('/admin/results') }}"
-                class="sidebar-link {{ request()->is('admin/results*') ? 'active' : '' }}">
+                href="{{ url('/account/results') }}"
+                class="sidebar-link {{ request()->is('account/results*') ? 'active' : '' }}">
                 <i class="bi bi-award"></i>
                 <span>Results</span>
             </a>
@@ -231,8 +231,8 @@
 
             {{-- Payments --}}
             <a
-                href="{{ url('/admin/payments') }}"
-                class="sidebar-link {{ request()->is('admin/payments*') ? 'active' : '' }}">
+                href="{{ url('/account/payments') }}"
+                class="sidebar-link {{ request()->is('account/payments*') ? 'active' : '' }}">
                 <i class="bi bi-cash-stack"></i>
                 <span>Payments</span>
             </a>
@@ -240,8 +240,8 @@
 
             {{-- Invoices --}}
             <a
-                href="{{ url('/admin/invoices') }}"
-                class="sidebar-link {{ request()->is('admin/invoices*') ? 'active' : '' }}">
+                href="{{ url('/account/invoices') }}"
+                class="sidebar-link {{ request()->is('account/invoices*') ? 'active' : '' }}">
                 <i class="bi bi-receipt"></i>
                 <span>Invoices</span>
             </a>
@@ -249,8 +249,8 @@
 
             {{-- Expenses --}}
             <a
-                href="{{ url('/admin/expenses') }}"
-                class="sidebar-link {{ request()->is('admin/expenses*') ? 'active' : '' }}">
+                href="{{ url('/account/expenses') }}"
+                class="sidebar-link {{ request()->is('account/expenses*') ? 'active' : '' }}">
                 <i class="bi bi-wallet2"></i>
                 <span>Expenses</span>
             </a>
@@ -258,8 +258,8 @@
 
             {{-- Financial Reports --}}
             <a
-                href="{{ url('/admin/reports/finance') }}"
-                class="sidebar-link {{ request()->is('admin/reports/finance*') ? 'active' : '' }}">
+                href="{{ url('/account/reports/finance') }}"
+                class="sidebar-link {{ request()->is('account/reports/finance*') ? 'active' : '' }}">
                 <i class="bi bi-graph-up"></i>
                 <span>Financial Reports</span>
             </a>
@@ -279,8 +279,8 @@
 
             {{-- Users --}}
             <a
-                href="{{ url('/admin/users') }}"
-                class="sidebar-link {{ request()->is('admin/users*') ? 'active' : '' }}">
+                href="{{ url('/account/users') }}"
+                class="sidebar-link {{ request()->is('account/users*') ? 'active' : '' }}">
                 <i class="bi bi-person-gear"></i>
                 <span>Users</span>
             </a>
@@ -288,8 +288,8 @@
 
             {{-- Roles --}}
             <a
-                href="{{ url('/admin/roles') }}"
-                class="sidebar-link {{ request()->is('admin/roles*') ? 'active' : '' }}">
+                href="{{ url('/account/roles') }}"
+                class="sidebar-link {{ request()->is('account/roles*') ? 'active' : '' }}">
                 <i class="bi bi-shield-lock"></i>
                 <span>Roles</span>
             </a>
@@ -297,8 +297,8 @@
 
             {{-- Permissions --}}
             <a
-                href="{{ url('/admin/permissions') }}"
-                class="sidebar-link {{ request()->is('admin/permissions*') ? 'active' : '' }}">
+                href="{{ url('/account/permissions') }}"
+                class="sidebar-link {{ request()->is('account/permissions*') ? 'active' : '' }}">
                 <i class="bi bi-key"></i>
                 <span>Permissions</span>
             </a>
@@ -317,8 +317,8 @@
 
 
             <a
-                href="{{ url('/admin/reports') }}"
-                class="sidebar-link {{ request()->is('admin/reports') ? 'active' : '' }}">
+                href="{{ url('/account/reports') }}"
+                class="sidebar-link {{ request()->is('account/reports') ? 'active' : '' }}">
                 <i class="bi bi-file-earmark-bar-graph"></i>
                 <span>Reports</span>
             </a>
@@ -337,8 +337,8 @@
 
 
             <a
-                href="{{ url('/admin/settings') }}"
-                class="sidebar-link {{ request()->is('admin/settings*') ? 'active' : '' }}">
+                href="{{ url('/account/settings') }}"
+                class="sidebar-link {{ request()->is('account/settings*') ? 'active' : '' }}">
                 <i class="bi bi-gear"></i>
                 <span>Settings</span>
             </a>
@@ -354,7 +354,7 @@
      SIDEBAR STYLES
 ============================================================= --}}
 <style>
-    #admin-sidebar {
+    #account-sidebar {
         width: 260px;
         min-width: 260px;
         height: calc(100vh - 65px);
@@ -429,15 +429,15 @@
 
     /* Scrollbar */
 
-    #admin-sidebar::-webkit-scrollbar {
+    #account-sidebar::-webkit-scrollbar {
         width: 5px;
     }
 
-    #admin-sidebar::-webkit-scrollbar-track {
+    #account-sidebar::-webkit-scrollbar-track {
         background: transparent;
     }
 
-    #admin-sidebar::-webkit-scrollbar-thumb {
+    #account-sidebar::-webkit-scrollbar-thumb {
         background: #dee2e6;
         border-radius: 10px;
     }
@@ -449,7 +449,7 @@
 
     @media (max-width: 991.98px) {
 
-        #admin-sidebar {
+        #account-sidebar {
             position: fixed;
 
             top: 65px;
@@ -460,11 +460,11 @@
             box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
         }
 
-        #admin-sidebar.show {
+        #account-sidebar.show {
             left: 0;
         }
 
-        #admin-content {
+        #account-content {
             width: 100%;
         }
 
@@ -478,7 +478,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
 
-        const sidebar = document.getElementById('admin-sidebar');
+        const sidebar = document.getElementById('account-sidebar');
         const toggle = document.getElementById('sidebarToggle');
 
         if (!sidebar || !toggle) {

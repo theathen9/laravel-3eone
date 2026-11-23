@@ -1,3 +1,4 @@
+
 # ============================================================
 # 1. Frontend
 # ============================================================
@@ -6,11 +7,9 @@ FROM node:22-alpine AS frontend
 WORKDIR /app
 
 COPY package*.json ./
-
 RUN npm ci
 
 COPY . .
-
 RUN npm run build
 
 
@@ -34,7 +33,9 @@ RUN --mount=type=cache,target=/root/.composer/cache \
 
 COPY . .
 
-RUN composer dump-autoload --optimize
+RUN composer dump-autoload \
+    --no-dev \
+    --optimize
 
 
 # ============================================================
@@ -42,8 +43,8 @@ RUN composer dump-autoload --optimize
 # ============================================================
 FROM php:8.4-cli-bookworm AS app
 
-ENV APP_ENV=production
-ENV APP_DEBUG=false
+ENV APP_ENV=production \
+    APP_DEBUG=false
 
 WORKDIR /var/www/html
 
@@ -66,12 +67,10 @@ RUN apt-get update \
         libfreetype6-dev \
         libwebp-dev \
         $PHPIZE_DEPS \
-    \
     && docker-php-ext-configure gd \
         --with-freetype \
         --with-jpeg \
         --with-webp \
-    \
     && docker-php-ext-install -j"$(nproc)" \
         bcmath \
         exif \
@@ -82,24 +81,40 @@ RUN apt-get update \
         pdo_pgsql \
         pgsql \
         zip \
-    \
     && pecl install redis \
     && docker-php-ext-enable redis \
-    \
-    && apt-get purge -y --auto-remove \
-        $PHPIZE_DEPS \
-    \
+    && apt-get purge -y --auto-remove $PHPIZE_DEPS \
     && rm -rf /var/lib/apt/lists/*
 
 
 # ============================================================
-# Laravel application
+# Copy Laravel application
 # ============================================================
 COPY . .
 
 COPY --from=vendor /app/vendor ./vendor
 
 COPY --from=frontend /app/public/build ./public/build
+
+
+# ============================================================
+# Validate PHP source encoding
+# ============================================================
+RUN php -r '\
+$files = new RecursiveIteratorIterator(\
+    new RecursiveDirectoryIterator("config", FilesystemIterator::SKIP_DOTS)\
+);\
+foreach ($files as $file) {\
+    if (!$file->isFile() || $file->getExtension() !== "php") continue;\
+    $handle = fopen($file->getPathname(), "rb");\
+    $bom = fread($handle, 3);\
+    fclose($handle);\
+    if ($bom === "\xEF\xBB\xBF") {\
+        fwrite(STDERR, "UTF-8 BOM detected: ".$file->getPathname().PHP_EOL);\
+        exit(1);\
+    }\
+}\
+'
 
 
 # ============================================================
@@ -111,18 +126,20 @@ RUN mkdir -p \
         storage/framework/views \
         storage/logs \
         bootstrap/cache \
-    && chown -R www-data:www-data \
-        storage \
-        bootstrap/cache \
-    && chmod -R ug+rwx \
-        storage \
-        bootstrap/cache
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R ug+rwX storage bootstrap/cache
 
 
 # ============================================================
 # Laravel package discovery
 # ============================================================
 RUN php artisan package:discover --ansi
+
+
+# ============================================================
+# Production configuration
+# ============================================================
+RUN php artisan view:cache
 
 
 # ============================================================

@@ -2,6 +2,7 @@
    resources/css/signin.css
    3EONE Authentication Styles
 ========================================================= */
+
 /* =========================================================
    INITIAL LOADING SCREEN
 ========================================================= */
@@ -20,7 +21,6 @@
     pointer-events: none;
 }
 
-/* Loading Progress */
 .loader-progress {
     width: 40%;
     animation: loader-progress 1.4s ease-in-out infinite;
@@ -36,7 +36,10 @@
     }
 }
 
-/* Login Page Reveal */
+/* =========================================================
+   LOGIN PAGE REVEAL
+========================================================= */
+
 .login-visible {
     animation: login-reveal 0.5s ease forwards;
 }
@@ -53,17 +56,10 @@
     }
 }
 
-/* Accessibility */
-@media (prefers-reduced-motion: reduce) {
-    #initialLoader,
-    .loader-progress,
-    .login-visible {
-        animation: none !important;
-        transition: none !important;
-    }
-}
+/* =========================================================
+   BACKGROUND IMAGE + DARK OVERLAY
+========================================================= */
 
-/* Background Image + Dark Overlay */
 .background-image {
     position: relative;
     isolation: isolate;
@@ -82,7 +78,10 @@
     z-index: -1;
 }
 
-/* Logo */
+/* =========================================================
+   LOGO
+========================================================= */
+
 .signin-icon {
     background-image: url("../images/icon.webp");
     background-size: cover;
@@ -90,7 +89,21 @@
     background-repeat: no-repeat;
 }
 
-/* Submit Button */
+/* =========================================================
+   INPUT FOCUS
+========================================================= */
+
+#loginForm input {
+    transition:
+        border-color 0.2s ease,
+        background-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+/* =========================================================
+   SUBMIT BUTTON
+========================================================= */
+
 #loginForm button[type="submit"] {
     min-height: 48px;
     transition:
@@ -109,7 +122,10 @@
     opacity: 0.75;
 }
 
-/* Loading Spinner */
+/* =========================================================
+   LOADING SPINNER
+========================================================= */
+
 .signin-spinner {
     width: 20px;
     height: 20px;
@@ -125,52 +141,29 @@
     }
 }
 
-/* Authentication Overlay */
-#loginOverlay {
-    transition:
-        opacity 0.25s ease,
-        visibility 0.25s ease;
-}
+/* =========================================================
+   ACCESSIBILITY
+========================================================= */
 
-/* Loading Progress */
-.signin-progress {
-    width: 40%;
-    animation: signin-progress 1.5s ease-in-out infinite;
-}
-
-@keyframes signin-progress {
-    0% {
-        transform: translateX(-120%);
-    }
-
-    100% {
-        transform: translateX(300%);
-    }
-}
-
-/* Input Focus */
-#loginForm input {
-    transition:
-        border-color 0.2s ease,
-        background-color 0.2s ease,
-        box-shadow 0.2s ease;
-}
-
-/* Accessibility */
 @media (prefers-reduced-motion: reduce) {
-    .signin-spinner,
-    .signin-progress {
+    #initialLoader,
+    .loader-progress,
+    .login-visible,
+    .signin-spinner {
         animation: none !important;
+        transition: none !important;
     }
 
     #loginForm button[type="submit"],
-    #loginForm input,
-    #loginOverlay {
+    #loginForm input {
         transition: none !important;
     }
 }
 
-/* Mobile */
+/* =========================================================
+   MOBILE
+========================================================= */
+
 @media (max-width: 640px) {
     .background-image {
         background-attachment: scroll;

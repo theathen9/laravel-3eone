@@ -1,4 +1,3 @@
-
 <?php
 // config\navigation.php
 return [
@@ -278,4 +277,3 @@ return [
     'teacher' => [],
 
 ];
-?>

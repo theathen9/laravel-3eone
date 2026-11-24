@@ -234,7 +234,7 @@
 
 
         // ==========================================
-        // LOGIN FORM LOADING
+        // LOGIN FORM
         // ==========================================
 
         const form = document.getElementById('loginForm');
@@ -244,11 +244,11 @@
         const submitBtn = document.getElementById('submitBtn');
         const buttonText = document.getElementById('buttonText');
         const buttonSpinner = document.getElementById('buttonSpinner');
-        const loginOverlay = document.getElementById('loginOverlay');
 
         if (!form || !submitBtn) return;
 
         let isSubmitting = false;
+
 
         // Username → Password
         username.addEventListener('keydown', function(event) {
@@ -258,6 +258,7 @@
             }
         });
 
+
         // Password → Submit
         password.addEventListener('keydown', function(event) {
             if (event.key === 'Enter') {
@@ -266,47 +267,44 @@
             }
         });
 
-        // Form submission
+
+        // ==========================================
+        // SUBMIT LOADING
+        // ==========================================
+
         form.addEventListener('submit', function(event) {
 
-            // Prevent duplicate submission
+            // Prevent duplicate submissions
             if (isSubmitting) {
                 event.preventDefault();
                 return;
             }
 
-            // Check browser validation
+            // Validate required fields
             if (!form.checkValidity()) {
                 return;
             }
 
             isSubmitting = true;
 
-            // Disable button
+            // Disable submit button
             submitBtn.disabled = true;
 
-            // Change button text
+            // Update button text
             buttonText.textContent = 'Signing in...';
 
-            // Show spinner
+            // Display spinner
             buttonSpinner.classList.remove('hidden');
 
-            // Disable inputs
+            // Prevent changing credentials during submission
             username.readOnly = true;
             password.readOnly = true;
-
-            // Show authentication overlay
-            if (loginOverlay) {
-                loginOverlay.classList.remove('hidden');
-                loginOverlay.classList.add('flex');
-                loginOverlay.setAttribute('aria-hidden', 'false');
-            }
 
         });
 
 
         // ==========================================
-        // RESTORE UI ON BROWSER PAGE RESTORE
+        // RESTORE AFTER BROWSER PAGE RESTORE
         // ==========================================
 
         window.addEventListener('pageshow', function() {
@@ -314,17 +312,13 @@
             isSubmitting = false;
 
             submitBtn.disabled = false;
+
             buttonText.textContent = 'Sign in';
+
             buttonSpinner.classList.add('hidden');
 
             username.readOnly = false;
             password.readOnly = false;
-
-            if (loginOverlay) {
-                loginOverlay.classList.add('hidden');
-                loginOverlay.classList.remove('flex');
-                loginOverlay.setAttribute('aria-hidden', 'true');
-            }
 
         });
 

@@ -26,8 +26,7 @@
                                 alt="3EONE logo"
                                 width="150"
                                 height="150"
-                                class="signin-icon mx-auto mb-5 block rounded-lg object-cover"
-                            >
+                                class="signin-icon mx-auto mb-5 block rounded-lg object-cover">
 
                             <h5 class="mb-6 text-xl font-bold text-gray-900">
                                 3EONE
@@ -39,12 +38,11 @@
                         <!-- General Error -->
                         @if ($errors->any())
 
-                            <div
-                                class="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-center text-sm font-medium text-red-700"
-                                role="alert"
-                            >
-                                {{ $errors->first() }}
-                            </div>
+                        <div
+                            class="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-center text-sm font-medium text-red-700"
+                            role="alert">
+                            {{ $errors->first() }}
+                        </div>
 
                         @endif
 
@@ -54,8 +52,7 @@
                             method="POST"
                             action="{{ route('auth.login') }}"
                             class="space-y-5"
-                            autocomplete="off"
-                        >
+                            autocomplete="off">
 
                             @csrf
 
@@ -69,11 +66,10 @@
                                     name="username"
                                     value="{{ old('username') }}"
                                     autocomplete="username"
-                                    placeholder="Username, email, ID, or employee/student reference code"
+                                    placeholder="Username, email, or ID"
                                     required
                                     autofocus
-                                    class="peer block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-                                >
+                                    class="peer block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
 
                                 <label
                                     for="username"
@@ -81,9 +77,8 @@
                                     peer-focus:-top-2 peer-focus:text-xs peer-focus:text-blue-600
                                     peer-[:not(:placeholder-shown)]:-top-2
                                     peer-[:not(:placeholder-shown)]:text-xs
-                                    peer-[:not(:placeholder-shown)]:text-blue-600"
-                                >
-                                    Username, email, ID, or employee/student reference code
+                                    peer-[:not(:placeholder-shown)]:text-blue-600">
+                                    Username, email, or ID
                                 </label>
 
                             </div>
@@ -107,8 +102,7 @@
                                     autocomplete="current-password"
                                     placeholder="Password"
                                     required
-                                    class="peer block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-                                >
+                                    class="peer block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
 
                                 <label
                                     for="password"
@@ -116,8 +110,7 @@
                                     peer-focus:-top-2 peer-focus:text-xs peer-focus:text-blue-600
                                     peer-[:not(:placeholder-shown)]:-top-2
                                     peer-[:not(:placeholder-shown)]:text-xs
-                                    peer-[:not(:placeholder-shown)]:text-blue-600"
-                                >
+                                    peer-[:not(:placeholder-shown)]:text-blue-600">
                                     Password
                                 </label>
 
@@ -126,9 +119,9 @@
 
                             <!-- Password Validation Error -->
                             @error('password')
-                                <p class="-mt-3 text-sm text-red-600">
-                                    {{ $message }}
-                                </p>
+                            <p class="-mt-3 text-sm text-red-600">
+                                {{ $message }}
+                            </p>
                             @enderror
 
 
@@ -136,12 +129,11 @@
                             <button
                                 type="submit"
                                 id="submitBtn"
-                                class="w-full cursor-pointer rounded-lg bg-blue-600 px-4 py-3 text-sm font-bold uppercase tracking-wide text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-500/30 active:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
-                            >
+                                class="w-full cursor-pointer rounded-lg bg-blue-600 px-4 py-3 text-sm font-bold uppercase tracking-wide text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-500/30 active:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
                                 Sign in
                             </button>
 
-                            
+
 
                         </form>
 
@@ -163,7 +155,7 @@
 @push('scripts')
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
 
         const username = document.getElementById('username');
         const password = document.getElementById('password');
@@ -176,7 +168,7 @@
         |--------------------------------------------------------------------------
         */
 
-        username.addEventListener('keydown', function (event) {
+        username.addEventListener('keydown', function(event) {
 
             if (event.key === 'Enter') {
 
@@ -193,7 +185,7 @@
         |--------------------------------------------------------------------------
         */
 
-        password.addEventListener('keydown', function (event) {
+        password.addEventListener('keydown', function(event) {
 
             if (event.key === 'Enter') {
 
@@ -210,7 +202,7 @@
         |--------------------------------------------------------------------------
         */
 
-        form.addEventListener('submit', function () {
+        form.addEventListener('submit', function() {
 
             submitBtn.disabled = true;
 

@@ -199,16 +199,19 @@ return [
             'submenu' => [
                 [
                     'title' => 'Employees',
+                    'icon' => 'bi bi-person-vcard',
                     'link' => '/account/people/employees',
                     'route' => 'account.people.employees',
                 ],
                 [
                     'title' => 'Teachers',
+                    'icon' => 'bi bi-person-workspace',
                     'link' => '/account/people/teachers',
                     'route' => 'account.people.teachers',
                 ],
                 [
                     'title' => 'Students',
+                    'icon' => 'bi bi-mortarboard',
                     'link' => '/account/people/students',
                     'route' => 'account.people.students',
                 ],
@@ -222,21 +225,25 @@ return [
             'submenu' => [
                 [
                     'title' => 'Academic Years',
+                    'icon' => 'bi bi-calendar-event',
                     'link' => '/account/academic/academic-years',
                     'route' => 'account.academic.academic-years',
                 ],
                 [
                     'title' => 'Classes',
+                    'icon' => 'bi bi-door-open',
                     'link' => '/account/academic/academic-classes',
                     'route' => 'account.academic.academic-classes',
                 ],
                 [
                     'title' => 'Subjects',
+                    'icon' => 'bi bi-journal-bookmark',
                     'link' => '/account/academic/academic-subjects',
                     'route' => 'account.academic.academic-subjects',
                 ],
                 [
                     'title' => 'Courses',
+                    'icon' => 'bi bi-book',
                     'link' => '/account/academic/academic-courses',
                     'route' => 'account.academic.academic-courses',
                 ],
@@ -250,11 +257,13 @@ return [
             'submenu' => [
                 [
                     'title' => 'Student Registration',
+                    'icon' => 'bi bi-person-plus',
                     'link' => '/account/registrations/students',
                     'route' => 'account.registrations.students.index',
                 ],
                 [
                     'title' => 'Employee Registration',
+                    'icon' => 'bi bi-person-plus',
                     'link' => '/account/registrations/employees',
                     'route' => 'account.registrations.employees.index',
                 ],

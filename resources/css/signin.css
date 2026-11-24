@@ -1,9 +1,118 @@
+/* =========================================================
+   resources/css/signin.css
+   3EONE Authentication Styles
+========================================================= */
+
+/* Background Image + Dark Overlay */
 .background-image {
+    position: relative;
+    isolation: isolate;
     background-image: url("../images/bgSignin.webp");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+    background-attachment: fixed;
 }
+
+.background-image::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: -1;
+}
+
+/* Logo */
 .signin-icon {
     background-image: url("../images/icon.webp");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* Submit Button */
+#loginForm button[type="submit"] {
+    min-height: 48px;
+    transition:
+        background-color 0.2s ease,
+        opacity 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.15s ease;
+}
+
+#loginForm button[type="submit"]:not(:disabled):active {
+    transform: scale(0.99);
+}
+
+#loginForm button[type="submit"]:disabled {
+    cursor: not-allowed;
+    opacity: 0.75;
+}
+
+/* Loading Spinner */
+.signin-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2.5px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: signin-spin 0.7s linear infinite;
+}
+
+@keyframes signin-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Authentication Overlay */
+#loginOverlay {
+    transition:
+        opacity 0.25s ease,
+        visibility 0.25s ease;
+}
+
+/* Loading Progress */
+.signin-progress {
+    width: 40%;
+    animation: signin-progress 1.5s ease-in-out infinite;
+}
+
+@keyframes signin-progress {
+    0% {
+        transform: translateX(-120%);
+    }
+
+    100% {
+        transform: translateX(300%);
+    }
+}
+
+/* Input Focus */
+#loginForm input {
+    transition:
+        border-color 0.2s ease,
+        background-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    .signin-spinner,
+    .signin-progress {
+        animation: none !important;
+    }
+
+    #loginForm button[type="submit"],
+    #loginForm input,
+    #loginOverlay {
+        transition: none !important;
+    }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+    .background-image {
+        background-attachment: scroll;
+    }
 }

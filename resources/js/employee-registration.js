@@ -59,6 +59,8 @@ const employeeRegistration = {
             return;
         }
 
+        this.role = form.dataset.role?.trim().toLowerCase();
+
         form.addEventListener("submit", (event) => {
             event.preventDefault();
             this.submit();
@@ -248,8 +250,18 @@ const employeeRegistration = {
             // this.elements.form.reset();
 
             // Optional: redirect after successful registration.
+            // Redirect based on authenticated role.
             setTimeout(() => {
-                window.location.href = "/admin/registrations/employees";
+                const allowedRoles = ["admin", "account"];
+
+                if (!allowedRoles.includes(this.role)) {
+                    this.showError(
+                        "Your role is not authorized to access this page.",
+                    );
+                    return;
+                }
+
+                window.location.href = `/${this.role}/registrations/employees`;
             }, 1000);
         } catch (error) {
             console.error("Employee registration error:", error);

@@ -9,6 +9,7 @@
 <form
     id="studentForm"
     method="POST"
+    data-role="{{ auth()->user()->role->name }}"
     enctype="multipart/form-data">
     @csrf
 

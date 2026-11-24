@@ -46,7 +46,7 @@ const StudentRegistration = {
             profileImage: document.getElementById("profile_image"),
             profilePreview: document.getElementById("preview_profile_image"),
         };
-
+        this.role = this.elements.form?.dataset.role?.trim().toLowerCase();
         this.bindEvents();
         this.loadClasses();
 
@@ -716,21 +716,28 @@ const StudentRegistration = {
 
         // Verify the actual PDF signature instead of trusting
         // the Content-Type header alone.
-        const prefix = new Uint8Array(
-            await blob.slice(0, 1024).arrayBuffer(),
-        );
+        const prefix = new Uint8Array(await blob.slice(0, 1024).arrayBuffer());
         const pdfSignature = [0x25, 0x50, 0x44, 0x46, 0x2d];
         let signatureOffset = -1;
 
-        for (let index = 0; index <= prefix.length - pdfSignature.length; index += 1) {
-            if (pdfSignature.every((byte, offset) => prefix[index + offset] === byte)) {
+        for (
+            let index = 0;
+            index <= prefix.length - pdfSignature.length;
+            index += 1
+        ) {
+            if (
+                pdfSignature.every(
+                    (byte, offset) => prefix[index + offset] === byte,
+                )
+            ) {
                 signatureOffset = index;
                 break;
             }
         }
 
         if (signatureOffset === -1) {
-            const contentType = response.headers.get("content-type") || "unknown content type";
+            const contentType =
+                response.headers.get("content-type") || "unknown content type";
             let message = `Invoice API returned ${contentType} instead of a PDF.`;
 
             if (contentType.includes("json")) {
@@ -745,9 +752,10 @@ const StudentRegistration = {
             throw new Error(message);
         }
 
-        const pdfBlob = signatureOffset === 0
-            ? blob
-            : blob.slice(signatureOffset, blob.size, "application/pdf");
+        const pdfBlob =
+            signatureOffset === 0
+                ? blob
+                : blob.slice(signatureOffset, blob.size, "application/pdf");
 
         // Release the previous object URL if one exists.
         if (this.invoiceDownloadUrl) {
@@ -856,9 +864,18 @@ const StudentRegistration = {
                 "success",
             );
 
-            // Give the browser time to start the download.
+            // Give the browser time to start the invoice download.
             setTimeout(() => {
-                window.location.href = "/admin/registrations/students";
+                const allowedRoles = ["admin", "account"];
+
+                if (!allowedRoles.includes(this.role)) {
+                    this.showError(
+                        "Your role is not authorized to access this page.",
+                    );
+                    return;
+                }
+
+                window.location.href = `/${this.role}/registrations/students`;
             }, 1000);
         } catch (error) {
             console.error("Student registration / invoice error:", error);

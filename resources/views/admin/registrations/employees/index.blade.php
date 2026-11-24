@@ -72,6 +72,7 @@ $email = "user" . rand(1000, 9999) . "@gmail.com";
         <form method="POST"
             enctype="multipart/form-data"
             id="employeeRegistration"
+            data-role="{{ auth()->user()->role->name }}"
             novalidate>
 
             @csrf

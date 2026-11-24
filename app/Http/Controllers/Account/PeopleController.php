@@ -115,7 +115,7 @@ class PeopleController extends Controller
             $q->where('position_name', 'like', '%teacher%');
         })->count();
 
-        return view('admin.people.employees', compact(
+        return view('account.people.employees', compact(
             'employees',
             'totalEmployees',
             'activeEmployees',

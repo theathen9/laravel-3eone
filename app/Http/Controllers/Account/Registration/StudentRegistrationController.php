@@ -106,7 +106,7 @@ class StudentRegistrationController extends Controller
 
 
 
-        return view('admin.registrations.students.index', compact(
+        return view('account.registrations.students.index', compact(
             'student_id',
             'idCode',
             'autoNameF',

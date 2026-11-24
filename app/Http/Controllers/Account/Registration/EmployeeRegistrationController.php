@@ -84,7 +84,7 @@ class EmployeeRegistrationController extends Controller
         // TODO: insert into tblEmployees
 
         return redirect()
-            ->route('admin.registrations.employees.index')
+            ->route('account.registrations.employees.index')
             ->with('success', 'Employee registered successfully.');
     }
 }

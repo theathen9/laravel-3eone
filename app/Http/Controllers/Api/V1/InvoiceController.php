@@ -7,6 +7,8 @@ use App\Models\Invoice;
 use App\Services\InvoiceService;
 use Illuminate\Contracts\View\View;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Http\JsonResponse;
+
 
 class InvoiceController extends Controller
 {

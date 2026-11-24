@@ -2,7 +2,10 @@
 
 @php
 $navigationType = $navigation ?? 'admin';
-$sidebarSections = config("navigation.{$navigationType}", []);
+$navigation = require resource_path('data/navigation.php');
+
+$sidebarSections = $navigation[$navigationType] ?? [];
+
 @endphp
 
 <aside id="admin-sidebar" class="bg-white border-end z-1">

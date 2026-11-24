@@ -2,6 +2,66 @@
    resources/css/signin.css
    3EONE Authentication Styles
 ========================================================= */
+/* =========================================================
+   INITIAL LOADING SCREEN
+========================================================= */
+
+#initialLoader {
+    opacity: 1;
+    visibility: visible;
+    transition:
+        opacity 0.4s ease,
+        visibility 0.4s ease;
+}
+
+#initialLoader.loader-hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+/* Loading Progress */
+.loader-progress {
+    width: 40%;
+    animation: loader-progress 1.4s ease-in-out infinite;
+}
+
+@keyframes loader-progress {
+    0% {
+        transform: translateX(-120%);
+    }
+
+    100% {
+        transform: translateX(350%);
+    }
+}
+
+/* Login Page Reveal */
+.login-visible {
+    animation: login-reveal 0.5s ease forwards;
+}
+
+@keyframes login-reveal {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    #initialLoader,
+    .loader-progress,
+    .login-visible {
+        animation: none !important;
+        transition: none !important;
+    }
+}
 
 /* Background Image + Dark Overlay */
 .background-image {

@@ -4,148 +4,185 @@
 
 @section('content')
 
-<div class="background-image relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-slate-950 px-4 py-10">
+{{-- Initial Loading Screen --}}
+<div id="initialLoader"
+    class="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950">
 
-    {{-- Background decoration --}}
-    <div class="pointer-events-none absolute inset-0 overflow-hidden">
-        <div class="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-blue-600/20 blur-3xl"></div>
-        <div class="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-indigo-600/20 blur-3xl"></div>
+    <div class="text-center">
+
+        <img
+            src="{{ asset('images/icon.webp') }}"
+            alt="3EONE"
+            width="90"
+            height="90"
+            class="mx-auto mb-6 rounded-2xl shadow-xl">
+
+        <h2 class="text-2xl font-extrabold tracking-widest text-white">
+            3EONE
+        </h2>
+
+        <div class="mx-auto mt-7 h-1.5 w-48 overflow-hidden rounded-full bg-white/20">
+            <div class="loader-progress h-full rounded-full bg-blue-500"></div>
+        </div>
+
+        <p class="mt-5 text-sm text-gray-400">
+            Preparing your experience...
+        </p>
+
     </div>
 
-    {{-- Login Card --}}
-    <div class="relative z-10 w-full max-w-md">
+</div>
 
-        <div class="overflow-hidden rounded-2xl border border-white/20 bg-white shadow-2xl">
 
-            <div class="px-6 py-9 sm:px-10">
+{{-- Login Page --}}
+<div id="loginPage" class="hidden">
 
-                {{-- Logo --}}
-                <div class="mb-8 text-center">
+    {{-- Put your existing login page content here --}}
 
-                    <img
-                        src="{{ asset('images/icon.webp') }}"
-                        alt="3EONE logo"
-                        width="100"
-                        height="100"
-                        fetchpriority="high"
-                        class="mx-auto mb-5 h-24 w-24 rounded-2xl object-cover shadow-lg">
+    <div class="background-image relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-slate-950 px-4 py-10">
 
-                    <h1 class="text-2xl font-extrabold tracking-tight text-gray-900">
-                        3EONE
-                    </h1>
+        {{-- Background decoration --}}
+        <div class="pointer-events-none absolute inset-0 overflow-hidden">
+            <div class="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-blue-600/20 blur-3xl"></div>
+            <div class="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-indigo-600/20 blur-3xl"></div>
+        </div>
 
-                    <p class="mt-2 text-sm text-gray-500">
-                        Welcome back! Sign in to continue.
-                    </p>
+        {{-- Login Card --}}
+        <div class="relative z-10 w-full max-w-md">
 
-                </div>
+            <div class="overflow-hidden rounded-2xl border border-white/20 bg-white shadow-2xl">
 
-                {{-- General Error --}}
-                @if ($errors->any())
-                <div
-                    class="mb-6 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
-                    role="alert">
+                <div class="px-6 py-9 sm:px-10">
 
-                    <svg class="mt-0.5 h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
+                    {{-- Logo --}}
+                    <div class="mb-8 text-center">
 
-                    <span>{{ $errors->first() }}</span>
-                </div>
-                @endif
+                        <img
+                            src="{{ asset('images/icon.webp') }}"
+                            alt="3EONE logo"
+                            width="100"
+                            height="100"
+                            fetchpriority="high"
+                            class="mx-auto mb-5 h-24 w-24 rounded-2xl object-cover shadow-lg">
 
-                {{-- Login Form --}}
-                <form
-                    id="loginForm"
-                    method="POST"
-                    action="{{ route('auth.login') }}"
-                    class="space-y-5"
-                    autocomplete="on">
+                        <h1 class="text-2xl font-extrabold tracking-tight text-gray-900">
+                            3EONE
+                        </h1>
 
-                    @csrf
-
-                    {{-- Username --}}
-                    <div>
-                        <label for="username" class="mb-2 block text-sm font-semibold text-gray-700">
-                            Username, email, or ID
-                        </label>
-
-                        <input
-                            type="text"
-                            id="username"
-                            name="username"
-                            value="{{ old('username') }}"
-                            autocomplete="username"
-                            placeholder="Enter your username"
-                            required
-                            autofocus
-                            class="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10">
-                    </div>
-
-                    {{-- Password --}}
-                    <div>
-                        <label for="password" class="mb-2 block text-sm font-semibold text-gray-700">
-                            Password
-                        </label>
-
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            autocomplete="current-password"
-                            placeholder="Enter your password"
-                            required
-                            class="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10">
-
-                        @error('password')
-                        <p class="mt-2 text-sm text-red-600">
-                            {{ $message }}
+                        <p class="mt-2 text-sm text-gray-500">
+                            Welcome back! Sign in to continue.
                         </p>
-                        @enderror
+
                     </div>
 
-                    {{-- Submit --}}
-                    <button
-                        type="submit"
-                        id="submitBtn"
-                        class="group flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold uppercase tracking-wide text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 hover:shadow-blue-600/30 focus:outline-none focus:ring-4 focus:ring-blue-500/30 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70">
+                    {{-- General Error --}}
+                    @if ($errors->any())
+                    <div
+                        class="mb-6 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+                        role="alert">
 
-                        <span id="buttonSpinner" class="hidden">
-                            <svg
-                                class="h-5 w-5 animate-spin"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                aria-hidden="true">
+                        <svg class="mt-0.5 h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
 
-                                <circle
-                                    class="opacity-25"
-                                    cx="12"
-                                    cy="12"
-                                    r="10"
-                                    stroke="currentColor"
-                                    stroke-width="4" />
+                        <span>{{ $errors->first() }}</span>
+                    </div>
+                    @endif
 
-                                <path
-                                    class="opacity-75"
-                                    fill="currentColor"
-                                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-                            </svg>
-                        </span>
+                    {{-- Login Form --}}
+                    <form
+                        id="loginForm"
+                        method="POST"
+                        action="{{ route('auth.login') }}"
+                        class="space-y-5"
+                        autocomplete="on">
 
-                        <span id="buttonText">Sign in</span>
-                    </button>
+                        @csrf
 
-                </form>
+                        {{-- Username --}}
+                        <div>
+                            <label for="username" class="mb-2 block text-sm font-semibold text-gray-700">
+                                Username, email, or ID
+                            </label>
 
-            </div>
+                            <input
+                                type="text"
+                                id="username"
+                                name="username"
+                                value="{{ old('username') }}"
+                                autocomplete="username"
+                                placeholder="Enter your username"
+                                required
+                                autofocus
+                                class="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10">
+                        </div>
 
-            {{-- Footer --}}
-            <div class="border-t border-gray-100 bg-gray-50 px-6 py-4 text-center">
-                <p class="text-xs text-gray-500">
-                    &copy; {{ date('Y') }} 3EONE. All rights reserved.
-                </p>
+                        {{-- Password --}}
+                        <div>
+                            <label for="password" class="mb-2 block text-sm font-semibold text-gray-700">
+                                Password
+                            </label>
+
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                autocomplete="current-password"
+                                placeholder="Enter your password"
+                                required
+                                class="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10">
+
+                            @error('password')
+                            <p class="mt-2 text-sm text-red-600">
+                                {{ $message }}
+                            </p>
+                            @enderror
+                        </div>
+
+                        {{-- Submit --}}
+                        <button
+                            type="submit"
+                            id="submitBtn"
+                            class="group flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold uppercase tracking-wide text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 hover:shadow-blue-600/30 focus:outline-none focus:ring-4 focus:ring-blue-500/30 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70">
+
+                            <span id="buttonSpinner" class="hidden">
+                                <svg
+                                    class="h-5 w-5 animate-spin"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    aria-hidden="true">
+
+                                    <circle
+                                        class="opacity-25"
+                                        cx="12"
+                                        cy="12"
+                                        r="10"
+                                        stroke="currentColor"
+                                        stroke-width="4" />
+
+                                    <path
+                                        class="opacity-75"
+                                        fill="currentColor"
+                                        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                                </svg>
+                            </span>
+
+                            <span id="buttonText">Sign in</span>
+                        </button>
+
+                    </form>
+
+                </div>
+
+                {{-- Footer --}}
+                <div class="border-t border-gray-100 bg-gray-50 px-6 py-4 text-center">
+                    <p class="text-xs text-gray-500">
+                        &copy; {{ date('Y') }} 3EONE. All rights reserved.
+                    </p>
+                </div>
+
             </div>
 
         </div>
@@ -210,80 +247,34 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
 
-        const form = document.getElementById('loginForm');
-        const username = document.getElementById('username');
-        const password = document.getElementById('password');
+        const loader = document.getElementById('initialLoader');
+        const loginPage = document.getElementById('loginPage');
 
-        const submitBtn = document.getElementById('submitBtn');
-        const buttonText = document.getElementById('buttonText');
-        const buttonSpinner = document.getElementById('buttonSpinner');
-        const loginOverlay = document.getElementById('loginOverlay');
+        function showLogin() {
 
-        if (!form || !submitBtn) return;
+            if (!loader || !loginPage) return;
 
-        let isSubmitting = false;
+            loader.classList.add('loader-hidden');
 
-        // Username → Password
-        username.addEventListener('keydown', function(event) {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                password.focus();
-            }
-        });
+            setTimeout(() => {
+                loader.remove();
 
-        // Password → Submit
-        password.addEventListener('keydown', function(event) {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                form.requestSubmit();
-            }
-        });
+                loginPage.classList.remove('hidden');
+                loginPage.classList.add('login-visible');
 
-        // Login submission
-        form.addEventListener('submit', function(event) {
+            }, 400);
+        }
 
-            if (isSubmitting) {
-                event.preventDefault();
-                return;
-            }
-
-            if (!form.checkValidity()) return;
-
-            isSubmitting = true;
-
-            // Button loading
-            submitBtn.disabled = true;
-            buttonText.textContent = 'Signing in...';
-            buttonSpinner.classList.remove('hidden');
-
-            // Disable inputs
-            username.readOnly = true;
-            password.readOnly = true;
-
-            // Full-screen processing overlay
-            loginOverlay.classList.remove('hidden');
-            loginOverlay.classList.add('flex');
-            loginOverlay.setAttribute('aria-hidden', 'false');
-
-        });
-
-        // Restore UI when browser restores the page
-        window.addEventListener('pageshow', function() {
-
-            isSubmitting = false;
-
-            submitBtn.disabled = false;
-            buttonText.textContent = 'Sign in';
-            buttonSpinner.classList.add('hidden');
-
-            username.readOnly = false;
-            password.readOnly = false;
-
-            loginOverlay.classList.add('hidden');
-            loginOverlay.classList.remove('flex');
-            loginOverlay.setAttribute('aria-hidden', 'true');
-
-        });
+        // Wait until page resources finish loading
+        if (document.readyState === 'complete') {
+            setTimeout(showLogin, 500);
+        } else {
+            window.addEventListener('load', function() {
+                setTimeout(showLogin, 500);
+            }, {
+                once: true
+            });
+        }
 
     });
 </script>

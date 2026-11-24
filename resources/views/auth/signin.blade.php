@@ -191,54 +191,6 @@
 
 </div>
 
-{{-- Full-screen processing overlay --}}
-<div
-    id="loginOverlay"
-    class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/50 px-4 backdrop-blur-sm"
-    aria-hidden="true">
-
-    <div class="w-full max-w-xs rounded-2xl bg-white p-8 text-center shadow-2xl">
-
-        <div class="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-blue-50">
-
-            <svg
-                class="h-9 w-9 animate-spin text-blue-600"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                aria-hidden="true">
-
-                <circle
-                    class="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    stroke-width="4" />
-
-                <path
-                    class="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-            </svg>
-
-        </div>
-
-        <h3 class="text-lg font-bold text-gray-900">
-            Authenticating
-        </h3>
-
-        <p class="mt-2 text-sm text-gray-500">
-            Please wait while we securely sign you in.
-        </p>
-
-        <div class="mt-6 h-1.5 overflow-hidden rounded-full bg-gray-100">
-            <div class="h-full w-1/2 animate-pulse rounded-full bg-blue-600"></div>
-        </div>
-
-    </div>
-
-</div>
 
 @endsection
 
